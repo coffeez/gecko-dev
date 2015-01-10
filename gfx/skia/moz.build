@@ -548,10 +548,10 @@ elif CONFIG['CPU_ARCH'] == 'arm' and CONFIG['GNU_CC']:
         SOURCES['skia/src/opts/SkXfermode_opts_arm_neon.cpp'].flags += ['-mfpu=neon']
 elif CONFIG['CPU_ARCH'].startswith('mips'):
     SOURCES += [
+        'skia/src/opts/SkBitmapProcState_opts_LS3.cpp',
         'skia/src/opts/SkUtils_opts_LS3.cpp',
     ]
     UNIFIED_SOURCES += [
-        'skia/src/opts/SkBitmapProcState_opts_none.cpp',
         'skia/src/opts/SkBlitMask_opts_none.cpp',
         'skia/src/opts/SkBlitRow_opts_none.cpp',
         'skia/src/opts/SkBlurImage_opts_none.cpp',
