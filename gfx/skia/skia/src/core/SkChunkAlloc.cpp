@@ -94,7 +94,7 @@ SkChunkAlloc::Block* SkChunkAlloc::newBlock(size_t bytes, AllocFailType ftype) {
 void* SkChunkAlloc::alloc(size_t bytes, AllocFailType ftype) {
     fTotalUsed += bytes;
 
-    bytes = SkAlign4(bytes);
+    bytes = SkAlign8(bytes);
 
     Block* block = fBlock;
 
