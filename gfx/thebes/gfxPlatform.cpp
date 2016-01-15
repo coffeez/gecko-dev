@@ -2041,7 +2041,7 @@ gfxPlatform::ShouldUseLayersAcceleration()
 bool
 gfxPlatform::AccelerateLayersByDefault()
 {
-#if defined(MOZ_GL_PROVIDER) || defined(MOZ_WIDGET_UIKIT)
+#if defined(MOZ_GL_PROVIDER) || defined(MOZ_WIDGET_UIKIT) || defined(_MIPS_ARCH_LOONGSON3A)
   return true;
 #else
   return false;
