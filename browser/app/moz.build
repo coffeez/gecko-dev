@@ -40,6 +40,9 @@ USE_LIBS += [
     'mozglue',
 ]
 
+if CONFIG['CPU_ARCH'].startswith('mips'):
+    USE_LIBS += [ 'memory-ls3' ]
+
 if CONFIG['_MSC_VER']:
     # Always enter a Windows program through wmain, whether or not we're
     # a console application.
