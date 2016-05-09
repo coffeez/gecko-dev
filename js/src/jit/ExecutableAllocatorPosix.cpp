@@ -63,8 +63,24 @@ js::jit::DeallocateExecutableMemory(void* addr, size_t bytes, size_t pageSize)
 ExecutablePool::Allocation
 ExecutableAllocator::systemAlloc(size_t n)
 {
+#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+    // On MIPS, j/jal instructions to branch within the current
+    // 256 MB-aligned region.
+    void* allocation = nullptr;
+    js::Vector<void*, 8, SystemAllocPolicy> unused_maps;
+    for (;;) {
+        allocation = AllocateExecutableMemory(nullptr, n, initialProtectionFlags(Executable),
+                                                    "js-jit-code", pageSize);
+        if ((uintptr_t(allocation) >> 28) == (uintptr_t(allocation + n) >> 28))
+          break;
+        unused_maps.append(allocation);
+    }
+    for (size_t i = 0; i < unused_maps.length(); i++)
+      DeallocateExecutableMemory(unused_maps[i], n, pageSize);
+#else
     void* allocation = AllocateExecutableMemory(nullptr, n, initialProtectionFlags(Executable),
                                                 "js-jit-code", pageSize);
+#endif
     ExecutablePool::Allocation alloc = { reinterpret_cast<char*>(allocation), n };
     return alloc;
 }
