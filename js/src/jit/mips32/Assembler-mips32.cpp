@@ -111,8 +111,11 @@ js::jit::SA(FloatRegister r)
 void
 jit::PatchJump(CodeLocationJump& jump_, CodeLocationLabel label, ReprotectCode reprotect)
 {
-    Instruction* inst1 = (Instruction*)jump_.raw();
-    Instruction* inst2 = inst1->next();
+    Instruction* inst1;
+    Instruction* inst2;
+
+    inst1 = AssemblerMIPSShared::GetInstructionImmediateFromJump((Instruction*)jump_.raw());
+    inst2 = inst1->next();
 
     MaybeAutoWritableJitCode awjc(inst1, 8, reprotect);
     Assembler::UpdateLuiOriValue(inst1, inst2, (uint32_t)label.raw());
@@ -146,23 +149,6 @@ jit::PatchBackedge(CodeLocationJump& jump, CodeLocationLabel label,
             branch->setBOffImm16(BOffImm16(4 * sizeof(uint32_t)));
         }
     }
-}
-
-void
-Assembler::executableCopy(uint8_t* buffer)
-{
-    MOZ_ASSERT(isFinished);
-    m_buffer.executableCopy(buffer);
-
-    // Patch all long jumps during code copy.
-    for (size_t i = 0; i < longJumps_.length(); i++) {
-        Instruction* inst1 = (Instruction*) ((uint32_t)buffer + longJumps_[i]);
-
-        uint32_t value = Assembler::ExtractLuiOriValue(inst1, inst1->next());
-        Assembler::UpdateLuiOriValue(inst1, inst1->next(), (uint32_t)buffer + value);
-    }
-
-    AutoFlushICache::setRange(uintptr_t(buffer), m_buffer.size());
 }
 
 uintptr_t
@@ -260,8 +246,12 @@ void
 Assembler::bind(InstImm* inst, uintptr_t branch, uintptr_t target)
 {
     int32_t offset = target - branch;
-    InstImm inst_bgezal = InstImm(op_regimm, zero, rt_bgezal, BOffImm16(0));
-    InstImm inst_beq = InstImm(op_beq, zero, zero, BOffImm16(0));
+
+    // Generate the patchable mixed jump for call.
+    if (inst->extractOpcode() == ((uint32_t)op_jal >> OpcodeShift)) {
+        addMixedJump(BufferOffset(branch), ImmPtr((void*)target));
+        return;
+    }
 
     // If encoded offset is 4, then the jump must be short
     if (BOffImm16(inst[0]).decode() == 4) {
@@ -271,46 +261,13 @@ Assembler::bind(InstImm* inst, uintptr_t branch, uintptr_t target)
         return;
     }
 
-    // Generate the long jump for calls because return address has to be the
-    // address after the reserved block.
-    if (inst[0].encode() == inst_bgezal.encode()) {
-        addLongJump(BufferOffset(branch));
-        Assembler::WriteLuiOriInstructions(inst, &inst[1], ScratchRegister, target);
-        inst[2] = InstReg(op_special, ScratchRegister, zero, ra, ff_jalr).encode();
-        // There is 1 nop after this.
-        return;
-    }
-
     if (BOffImm16::IsInRange(offset)) {
-        bool conditional = (inst[0].encode() != inst_bgezal.encode() &&
-                            inst[0].encode() != inst_beq.encode());
-
         inst[0].setBOffImm16(BOffImm16(offset));
         inst[1].makeNop();
-
-        // Skip the trailing nops in conditional branches.
-        if (conditional) {
-            inst[2] = InstImm(op_regimm, zero, rt_bgez, BOffImm16(3 * sizeof(void*))).encode();
-            // There are 2 nops after this
-        }
         return;
     }
 
-    if (inst[0].encode() == inst_beq.encode()) {
-        // Handle long unconditional jump.
-        addLongJump(BufferOffset(branch));
-        Assembler::WriteLuiOriInstructions(inst, &inst[1], ScratchRegister, target);
-        inst[2] = InstReg(op_special, ScratchRegister, zero, zero, ff_jr).encode();
-        // There is 1 nop after this.
-    } else {
-        // Handle long conditional jump.
-        inst[0] = invertBranch(inst[0], BOffImm16(5 * sizeof(void*)));
-        // No need for a "nop" here because we can clobber scratch.
-        addLongJump(BufferOffset(branch + sizeof(void*)));
-        Assembler::WriteLuiOriInstructions(&inst[1], &inst[2], ScratchRegister, target);
-        inst[3] = InstReg(op_special, ScratchRegister, zero, zero, ff_jr).encode();
-        // There is 1 nop after this.
-    }
+    addMixedJump(BufferOffset(branch), ImmPtr((const void*)target));
 }
 
 void
@@ -331,7 +288,7 @@ Assembler::bind(RepatchLabel* label)
             MOZ_ASSERT(BOffImm16::IsInRange(offset));
             inst1->setBOffImm16(BOffImm16(offset));
         } else {
-            Assembler::UpdateLuiOriValue(inst1, inst1->next(), dest.getOffset());
+            addMixedJump(b, ImmPtr((void*)dest.getOffset()), MixedJumpPatch::PATCHABLE);
         }
 
     }

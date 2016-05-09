@@ -679,6 +679,22 @@ MacroAssemblerMIPSShared::compareFloatingPoint(FloatFormat fmt, FloatRegister lh
 }
 
 void
+MacroAssemblerMIPSShared::GenerateMixedJumps()
+{
+    // Generate all mixed jumps.
+    for (size_t i = 0; i < numMixedJumps(); i++) {
+        MixedJumpPatch& mjp = mixedJump(i);
+        if (MixedJumpPatch::NONE == mjp.kind && uintptr_t(mjp.target) <= size())
+            continue;
+        BufferOffset bo = m_buffer.nextOffset();
+        asMasm().ma_liPatchable(ScratchRegister, ImmWord(0));
+        as_jr(ScratchRegister);
+        as_nop();
+        mjp.mid = bo;
+    }
+}
+
+void
 MacroAssemblerMIPSShared::ma_cmp_set_double(Register dest, FloatRegister lhs, FloatRegister rhs,
                                             DoubleCondition c)
 {
@@ -1136,7 +1152,7 @@ MacroAssembler::call(Register reg)
 CodeOffset
 MacroAssembler::call(Label* label)
 {
-    ma_bal(label);
+    ma_jal(label);
     return CodeOffset(currentOffset());
 }
 
