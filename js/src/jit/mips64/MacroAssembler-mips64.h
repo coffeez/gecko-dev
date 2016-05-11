@@ -120,8 +120,6 @@ class MacroAssemblerMIPS64 : public MacroAssemblerMIPSShared
         ma_b(ScratchRegister, rhs, l, c, jumpKind);
     }
 
-    void ma_jal(Label* l);
-
     // fp instructions
     void ma_lid(FloatRegister dest, double value);
 
