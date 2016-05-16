@@ -564,8 +564,8 @@ class MacroAssemblerMIPS64Compat : public MacroAssemblerMIPS64
         branchTest32(cond, SecondScratchReg, imm, label);
     }
     void branchTest32(Condition cond, AbsoluteAddress address, Imm32 imm, Label* label) {
-        load32(address, ScratchRegister);
-        branchTest32(cond, ScratchRegister, imm, label);
+        load32(address, SecondScratchReg);
+        branchTest32(cond, SecondScratchReg, imm, label);
     }
     void branchTestPtr(Condition cond, Register lhs, Register rhs, Label* label) {
         MOZ_ASSERT(cond == Zero || cond == NonZero || cond == Signed || cond == NotSigned);
