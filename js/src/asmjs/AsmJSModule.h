@@ -596,21 +596,36 @@ class AsmJSModule
         {
             RawPointer,
             CodeLabel,
-            InstructionImmediate
+            MixedJump
         };
 
         RelativeLink()
         { }
 
 #if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
-        // On MIPS, CodeLabels are instruction immediates so RelativeLinks only
-        // patch instruction immediates.
-        explicit RelativeLink(Kind kind) {
-            MOZ_ASSERT(kind == CodeLabel || kind == InstructionImmediate);
+        // On MIPS, CodeLabels are instruction immediates so RelativeLinks need
+        // patch instruction immediates and mixed jump.
+        explicit RelativeLink(Kind kind)
+          : kind(kind)
+        {
+            MOZ_ASSERT(kind == CodeLabel || kind == MixedJump);
         }
         bool isRawPointerPatch() {
             return false;
         }
+
+        Kind kind;
+
+        union {
+            uint32_t patchAtOffset;
+
+            struct {
+                uint32_t srcOffset;
+                uint32_t midOffset;
+            };
+        };
+
+        uint32_t targetOffset;
 #else
         // On the rest, CodeLabels are raw pointers so RelativeLinks only patch
         // raw pointers.
@@ -620,10 +635,10 @@ class AsmJSModule
         bool isRawPointerPatch() {
             return true;
         }
-#endif
 
         uint32_t patchAtOffset;
         uint32_t targetOffset;
+#endif
     };
 
     typedef Vector<RelativeLink, 0, SystemAllocPolicy> RelativeLinkVector;

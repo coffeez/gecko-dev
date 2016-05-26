@@ -372,14 +372,15 @@ AsmJSModule::finish(ExclusiveContext* cx, TokenStream& tokenStream, MacroAssembl
 #endif
 
 #if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
-    // On MIPS we need to update all the long jumps because they contain an
+    // On MIPS we need to update all the mixed jumps because they contain an
     // absolute adress. The values are correctly patched for the current address
     // space, but not after serialization or profiling-mode toggling.
-    for (size_t i = 0; i < masm.numLongJumps(); i++) {
-        size_t off = masm.longJump(i);
-        RelativeLink link(RelativeLink::InstructionImmediate);
-        link.patchAtOffset = off;
-        link.targetOffset = Assembler::ExtractInstructionImmediate(code_ + off) - uintptr_t(code_);
+    for (size_t i = 0; i < masm.numMixedJumps(); i++) {
+        const Assembler::MixedJumpPatch& mjp = masm.mixedJump(i);
+        RelativeLink link(RelativeLink::MixedJump);
+        link.srcOffset = mjp.src.getOffset();
+        link.midOffset = mjp.mid.getOffset();
+        link.targetOffset = uintptr_t(mjp.target);
         if (!staticLinkData_.relativeLinks.append(link))
             return false;
     }
@@ -729,6 +730,38 @@ AsmJSModule::staticallyLink(ExclusiveContext* cx)
 
     for (size_t i = 0; i < staticLinkData_.relativeLinks.length(); i++) {
         RelativeLink link = staticLinkData_.relativeLinks[i];
+#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+        if (link.kind == RelativeLink::CodeLabel) {
+            uint8_t* patchAt = code_ + link.patchAtOffset;
+            uint8_t* target = code_ + link.targetOffset;
+
+            // In the case of long-jumps on MIPS and possibly future cases, a
+            // RelativeLink is used to patch a pointer to the function entry. If
+            // profiling is enabled (by cloning a module with profiling enabled),
+            // the target should be the profiling entry.
+            if (profilingEnabled_) {
+                const CodeRange* codeRange = lookupCodeRange(target);
+                if (codeRange && codeRange->isFunction() && link.targetOffset == codeRange->entry())
+                    target = code_ + codeRange->profilingEntry();
+            }
+
+            Assembler::PatchInstructionImmediate(patchAt, PatchedImmPtr(target));
+        } else {
+            uint8_t* src = code_ + link.srcOffset;
+            uint8_t* mid = (INT_MIN == link.midOffset) ? nullptr : (code_ + link.midOffset);
+            uint8_t* target = code_ + link.targetOffset;
+
+            MOZ_ASSERT(link.kind == RelativeLink::MixedJump);
+
+            if (profilingEnabled_) {
+                const CodeRange* codeRange = lookupCodeRange(target);
+                if (codeRange && codeRange->isFunction() && link.targetOffset == codeRange->entry())
+                    target = code_ + codeRange->profilingEntry();
+            }
+
+            Assembler::PatchMixedJump(src, mid, target);
+        }
+#else
         uint8_t* patchAt = code_ + link.patchAtOffset;
         uint8_t* target = code_ + link.targetOffset;
 
@@ -742,10 +775,8 @@ AsmJSModule::staticallyLink(ExclusiveContext* cx)
                 target = code_ + codeRange->profilingEntry();
         }
 
-        if (link.isRawPointerPatch())
-            *(uint8_t**)(patchAt) = target;
-        else
-            Assembler::PatchInstructionImmediate(patchAt, PatchedImmPtr(target));
+        *(uint8_t**)(patchAt) = target;
+#endif
     }
 
     for (auto imm : MakeEnumeratedRange(SymbolicAddress::Limit)) {
@@ -1719,6 +1750,18 @@ AsmJSModule::clone(JSContext* cx, ScopedJSDeletePtr<AsmJSModule>* moduleOut) con
     out.profilingEnabled_ = profilingEnabled_;
 
     if (profilingEnabled_) {
+        for (size_t i = 0; i < out.codeRanges_.length(); i++) {
+            CodeRange& cr = out.codeRanges_[i];
+            if (!cr.isFunction())
+                continue;
+
+            RelativeLink link(RelativeLink::MixedJump);
+            link.srcOffset = cr.profilingJump();
+            link.midOffset = INT_MIN;
+            link.targetOffset = cr.profilingEpilogue();
+            if (!out.staticLinkData_.relativeLinks.append(link))
+                return false;
+        }
         if (!out.profilingLabels_.resize(profilingLabels_.length()))
             return false;
         for (size_t i = 0; i < profilingLabels_.length(); i++) {
@@ -1817,8 +1860,8 @@ AsmJSModule::setProfilingEnabled(bool enabled, JSContext* cx)
         void* callee = nullptr;
         (void)callerRetAddr;
 #elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
-        uint8_t* instr = callerRetAddr - Assembler::PatchWrite_NearCallSize();
-        void* callee = (void*)Assembler::ExtractInstructionImmediate(instr);
+        Instruction* jump = (Instruction*)(callerRetAddr - 2 * sizeof(uint32_t));
+        void* callee = Assembler::GetInstructionImmediateFromJump(jump);
 #elif defined(JS_CODEGEN_NONE)
         MOZ_CRASH();
         void* callee = nullptr;
@@ -1844,7 +1887,7 @@ AsmJSModule::setProfilingEnabled(bool enabled, JSContext* cx)
         (void)newCallee;
         MOZ_CRASH();
 #elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
-        Assembler::PatchInstructionImmediate(instr, PatchedImmPtr(newCallee));
+        Assembler::PatchMixedJump((uint8_t*)jump, nullptr, newCallee);
 #elif defined(JS_CODEGEN_NONE)
         MOZ_CRASH();
 #else
@@ -1907,28 +1950,11 @@ AsmJSModule::setProfilingEnabled(bool enabled, JSContext* cx)
         (void)jump;
         (void)profilingEpilogue;
         MOZ_CRASH();
-#elif defined(JS_CODEGEN_MIPS32)
-        Instruction* instr = (Instruction*)jump;
+#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
         if (enabled) {
-            Assembler::WriteLuiOriInstructions(instr, instr->next(),
-                                               ScratchRegister, (uint32_t)profilingEpilogue);
-            instr[2] = InstReg(op_special, ScratchRegister, zero, zero, ff_jr);
+            new (jump) InstJump(op_j, JOffImm26(intptr_t(profilingEpilogue)));
         } else {
-            instr[0].makeNop();
-            instr[1].makeNop();
-            instr[2].makeNop();
-        }
-#elif defined(JS_CODEGEN_MIPS64)
-        Instruction* instr = (Instruction*)jump;
-        if (enabled) {
-            Assembler::WriteLoad64Instructions(instr, ScratchRegister, (uint64_t)profilingEpilogue);
-            instr[4] = InstReg(op_special, ScratchRegister, zero, zero, ff_jr);
-        } else {
-            instr[0].makeNop();
-            instr[1].makeNop();
-            instr[2].makeNop();
-            instr[3].makeNop();
-            instr[4].makeNop();
+            new (jump) InstNOP();
         }
 #elif defined(JS_CODEGEN_NONE)
         MOZ_CRASH();

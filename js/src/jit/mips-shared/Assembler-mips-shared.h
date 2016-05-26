@@ -812,6 +812,26 @@ class AssemblerMIPSShared : public AssemblerShared
         TestForFalse
     };
 
+    struct MixedJumpPatch
+    {
+        enum Kind {
+            NONE,
+            PATCHABLE
+        };
+
+        BufferOffset src;
+        BufferOffset mid;
+        void* target;
+        Kind kind;
+
+        MixedJumpPatch(BufferOffset src, void* target, Kind kind)
+          : src(src),
+            mid(BufferOffset()),
+            target(target),
+            kind(kind)
+        { }
+    };
+
     // :( this should be protected, but since CodeGenerator
     // wants to use it, It needs to go out here :(
 
@@ -839,26 +859,6 @@ class AssemblerMIPSShared : public AssemblerShared
 
         RelativePatch(BufferOffset offset, void* target, Relocation::Kind kind)
           : offset(offset),
-            target(target),
-            kind(kind)
-        { }
-    };
-
-    struct MixedJumpPatch
-    {
-        enum Kind {
-            NONE,
-            PATCHABLE
-        };
-
-        BufferOffset src;
-        BufferOffset mid;
-        void* target;
-        Kind kind;
-
-        MixedJumpPatch(BufferOffset src, void* target, Kind kind)
-          : src(src),
-            mid(BufferOffset()),
             target(target),
             kind(kind)
         { }
@@ -1257,6 +1257,7 @@ class AssemblerMIPSShared : public AssemblerShared
 
     static uint8_t* NextInstruction(uint8_t* instruction, uint32_t* count = nullptr);
     static Instruction* GetInstructionImmediateFromJump(Instruction* jump);
+    static void PatchMixedJump(uint8_t* src, uint8_t* mid, uint8_t* target);
 
     static void ToggleToJmp(CodeLocationLabel inst_);
     static void ToggleToCmp(CodeLocationLabel inst_);

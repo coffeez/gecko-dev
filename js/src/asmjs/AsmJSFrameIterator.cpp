@@ -335,16 +335,7 @@ js::GenerateAsmJSFunctionEpilogue(MacroAssembler& masm, unsigned framePushed,
         masm.twoByteNop();
 #elif defined(JS_CODEGEN_ARM)
         masm.nop();
-#elif defined(JS_CODEGEN_MIPS32)
-        masm.nop();
-        masm.nop();
-        masm.nop();
-        masm.nop();
-#elif defined(JS_CODEGEN_MIPS64)
-        masm.nop();
-        masm.nop();
-        masm.nop();
-        masm.nop();
+#elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
         masm.nop();
         masm.nop();
 #endif

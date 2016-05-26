@@ -101,6 +101,11 @@ AssemblerMIPSShared::asmMergeWith(const AssemblerMIPSShared& other)
 {
     if (!AssemblerShared::asmMergeWith(size(), other))
         return false;
+    for (size_t i = 0; i < other.numMixedJumps(); i++) {
+        const MixedJumpPatch& mjp = other.mixedJumps_[i];
+        addMixedJump(BufferOffset(size() + mjp.src.getOffset()),
+                     ImmPtr(size() + mjp.target), mjp.kind);
+    }
     return m_buffer.appendBuffer(other.m_buffer);
 }
 
@@ -1704,6 +1709,34 @@ AssemblerMIPSShared::GetInstructionImmediateFromJump(Instruction* jump)
     }
 
     return jump;
+}
+
+void
+AssemblerMIPSShared::PatchMixedJump(uint8_t* src, uint8_t* mid, uint8_t* target)
+{
+    InstImm* b = (InstImm*)src;
+    uint32_t opcode = b->extractOpcode();
+    int offset;
+
+    if (mid) {
+        offset = intptr_t(mid);
+        Assembler::PatchInstructionImmediate(mid, PatchedImmPtr(target));
+    } else {
+        offset = intptr_t(target);
+    }
+
+    if (((uint32_t)op_j >> OpcodeShift) == opcode ||
+        ((uint32_t)op_jal >> OpcodeShift) == opcode)
+    {
+        InstJump* j = (InstJump*)b;
+
+        j->setJOffImm26(JOffImm26(offset));
+    } else {
+        InstImm inst_beq = InstImm(op_beq, zero, zero, BOffImm16(0));
+        int i = (b[0].encode() == inst_beq.encode()) ? 0 : 2;
+
+        b[i] = InstJump(op_j, JOffImm26(offset)).encode();
+    }
 }
 
 void
