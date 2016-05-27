@@ -69,7 +69,22 @@ AllocateExecutableMemory(ExclusiveContext* cx, size_t bytes)
     // case, DynamicallyLinkModule will reprotect the code as RX.
     unsigned permissions =
         ExecutableAllocator::initialProtectionFlags(ExecutableAllocator::Writable);
+#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+    // On MIPS, j/jal instructions to branch within the current
+    // 256 MB-aligned region.
+    void* p = nullptr;
+    js::Vector<void*, 8, SystemAllocPolicy> unused_maps;
+    for (;;) {
+        p = AllocateExecutableMemory(nullptr, bytes, permissions, "asm-js-code", AsmJSPageSize);
+        if ((uintptr_t(p) >> 28) == (uintptr_t(p + bytes) >> 28))
+          break;
+        unused_maps.append(p);
+    }
+    for (size_t i = 0; i < unused_maps.length(); i++)
+      DeallocateExecutableMemory(unused_maps[i], bytes, AsmJSPageSize);
+#else
     void* p = AllocateExecutableMemory(nullptr, bytes, permissions, "asm-js-code", AsmJSPageSize);
+#endif
     if (!p)
         ReportOutOfMemory(cx);
     return (uint8_t*)p;
