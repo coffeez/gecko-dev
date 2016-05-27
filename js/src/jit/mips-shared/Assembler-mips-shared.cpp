@@ -1541,6 +1541,59 @@ AssemblerMIPSShared::bind(Label* label, BufferOffset boff)
 }
 
 void
+AssemblerMIPSShared::bind(InstImm* inst, uintptr_t branch, uintptr_t target)
+{
+    int64_t offset = target - branch;
+
+    // Generate the patchable mixed jump for call.
+    if (inst->extractOpcode() == ((uint32_t)op_jal >> OpcodeShift)) {
+        addMixedJump(BufferOffset(branch), ImmPtr((void*)target));
+        return;
+    }
+
+    // If encoded offset is 4, then the jump must be short
+    if (BOffImm16(inst[0]).decode() == 4) {
+        MOZ_ASSERT(BOffImm16::IsInRange(offset));
+        inst[0].setBOffImm16(BOffImm16(offset));
+        inst[1].makeNop();
+        return;
+    }
+
+    if (BOffImm16::IsInRange(offset)) {
+        inst[0].setBOffImm16(BOffImm16(offset));
+        inst[1].makeNop();
+        return;
+    }
+
+    addMixedJump(BufferOffset(branch), ImmPtr((void*)target));
+}
+
+void
+AssemblerMIPSShared::bind(RepatchLabel* label)
+{
+    BufferOffset dest = nextOffset();
+    if (label->used() && !oom()) {
+        // If the label has a use, then change this use to refer to
+        // the bound label;
+        BufferOffset b(label->offset());
+        InstImm* inst1 = (InstImm*)editSrc(b);
+
+        // If first instruction is branch, then this is a loop backedge.
+        if (inst1->extractOpcode() == ((uint32_t)op_beq >> OpcodeShift)) {
+            // Backedges are short jumps when bound, but can become long
+            // when patched.
+            uint64_t offset = dest.getOffset() - label->offset();
+            MOZ_ASSERT(BOffImm16::IsInRange(offset));
+            inst1->setBOffImm16(BOffImm16(offset));
+        } else {
+            addMixedJump(b, ImmPtr((void*)dest.getOffset()), MixedJumpPatch::PATCHABLE);
+        }
+
+    }
+    label->bind(dest.getOffset());
+}
+
+void
 AssemblerMIPSShared::retarget(Label* label, Label* target)
 {
     if (label->used() && !oom()) {
