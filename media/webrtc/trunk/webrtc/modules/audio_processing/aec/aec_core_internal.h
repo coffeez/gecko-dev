@@ -185,13 +185,6 @@ typedef void (*WebRtcAecOverdriveAndSuppress)(AecCore* aec,
                                               float efw[2][PART_LEN1]);
 extern WebRtcAecOverdriveAndSuppress WebRtcAec_OverdriveAndSuppress;
 
-typedef void (*WebRtcAecComfortNoise)(AecCore* aec,
-                                      float efw[2][PART_LEN1],
-                                      complex_t* comfortNoiseHband,
-                                      const float* noisePow,
-                                      const float* lambda);
-extern WebRtcAecComfortNoise WebRtcAec_ComfortNoise;
-
 typedef void (*WebRtcAecSubBandCoherence)(AecCore* aec,
                                           float efw[2][PART_LEN1],
                                           float xfw[2][PART_LEN1],

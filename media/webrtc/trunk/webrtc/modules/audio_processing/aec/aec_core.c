@@ -137,7 +137,6 @@ WebRtcAecFilterFar WebRtcAec_FilterFar;
 WebRtcAecScaleErrorSignal WebRtcAec_ScaleErrorSignal;
 WebRtcAecFilterAdaptation WebRtcAec_FilterAdaptation;
 WebRtcAecOverdriveAndSuppress WebRtcAec_OverdriveAndSuppress;
-WebRtcAecComfortNoise WebRtcAec_ComfortNoise;
 WebRtcAecSubBandCoherence WebRtcAec_SubbandCoherence;
 
 __inline static float MulRe(float aRe, float aIm, float bRe, float bIm) {
@@ -1170,7 +1169,7 @@ static void NonLinearProcessing(AecCore* aec,
   WebRtcAec_OverdriveAndSuppress(aec, hNl, hNlFb, efw);
 
   // Add comfort noise.
-  WebRtcAec_ComfortNoise(aec, efw, comfortNoiseHband, aec->noisePow, hNl);
+  ComfortNoise(aec, efw, comfortNoiseHband, aec->noisePow, hNl);
 
   // TODO(bjornv): Investigate how to take the windowing below into account if
   // needed.
@@ -1578,7 +1577,6 @@ AecCore* WebRtcAec_CreateAec() {
   WebRtcAec_ScaleErrorSignal = ScaleErrorSignal;
   WebRtcAec_FilterAdaptation = FilterAdaptation;
   WebRtcAec_OverdriveAndSuppress = OverdriveAndSuppress;
-  WebRtcAec_ComfortNoise = ComfortNoise;
   WebRtcAec_SubbandCoherence = SubbandCoherence;
 
 #if defined(WEBRTC_ARCH_X86_FAMILY)
