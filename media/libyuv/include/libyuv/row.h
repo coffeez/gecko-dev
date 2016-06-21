@@ -342,6 +342,10 @@ extern "C" {
 #define HAS_SPLITUVROW_MIPS_DSPR2
 #endif
 #endif
+#if !defined(LIBYUV_DISABLE_MIPS) && defined(__mips__) && \
+    defined(_MIPS_ARCH_LOONGSON3A)
+#define HAS_YUY2TOYROW_MMI
+#endif
 
 #if defined(_MSC_VER) && !defined(__CLR_VER)
 #define SIMD_ALIGNED(var) __declspec(align(16)) var
@@ -1384,6 +1388,9 @@ void YUY2ToUV422Row_NEON(const uint8* src_yuy2,
 void YUY2ToYRow_C(const uint8* src_yuy2, uint8* dst_y, int pix);
 void YUY2ToUVRow_C(const uint8* src_yuy2, int stride_yuy2,
                    uint8* dst_u, uint8* dst_v, int pix);
+void YUY2ToYRow_MMI(const uint8* src_yuy2, uint8* dst_y, int pix);
+void YUY2ToUVRow_MMI(const uint8* src_yuy2, int stride_yuy2,
+                     uint8* dst_u, uint8* dst_v, int pix);
 void YUY2ToUV422Row_C(const uint8* src_yuy2,
                       uint8* dst_u, uint8* dst_v, int pix);
 void YUY2ToYRow_Any_AVX2(const uint8* src_yuy2, uint8* dst_y, int pix);
