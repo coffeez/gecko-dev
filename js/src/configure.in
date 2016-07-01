@@ -968,12 +968,8 @@ arm*)
     CPU_ARCH=arm
     ;;
 
-mips|mipsel)
-    CPU_ARCH="mips32"
-    ;;
-
-mips64|mips64el)
-    CPU_ARCH="mips64"
+mips|mipsel|mips64|mips64el)
+    CPU_ARCH="mips"
     ;;
 
 aarch64*)
@@ -3132,12 +3128,14 @@ elif test "$CPU_ARCH" = "arm"; then
         AC_DEFINE(JS_DISASM_ARM)
         JS_DISASM_ARM=1
     fi
-elif test "$CPU_ARCH" = "mips32"; then
-    AC_DEFINE(JS_CODEGEN_MIPS32)
-    JS_CODEGEN_MIPS32=1
-elif test "$CPU_ARCH" = "mips64"; then
-    AC_DEFINE(JS_CODEGEN_MIPS64)
-    JS_CODEGEN_MIPS64=1
+elif test "$CPU_ARCH" = "mips"; then
+    if test ! "$HAVE_64BIT_BUILD"; then
+        AC_DEFINE(JS_CODEGEN_MIPS32)
+        JS_CODEGEN_MIPS32=1
+    else
+        AC_DEFINE(JS_CODEGEN_MIPS64)
+        JS_CODEGEN_MIPS64=1
+    fi
 fi
 
 AC_SUBST(JS_SIMULATOR)
