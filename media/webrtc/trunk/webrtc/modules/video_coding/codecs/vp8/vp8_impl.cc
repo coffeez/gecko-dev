@@ -629,6 +629,12 @@ int VP8EncoderImpl::SetCpuSpeed(int width, int height) {
 int VP8EncoderImpl::NumberOfThreads(int width, int height, int cpus) {
   if (width * height >= 1920 * 1080 && cpus > 8) {
     return 8;  // 8 threads for 1080p on high perf machines.
+#if defined(_MIPS_ARCH_LOONGSON3A)
+  } else {
+    // 4 thread for 1080p or less on loongson3 cpus.
+    return 4;
+  }
+#else
   } else if (width * height > 1280 * 960 && cpus >= 6) {
     // 3 threads for 1080p.
     return 3;
@@ -639,6 +645,7 @@ int VP8EncoderImpl::NumberOfThreads(int width, int height, int cpus) {
     // 1 thread for VGA or less.
     return 1;
   }
+#endif
 }
 
 int VP8EncoderImpl::InitAndSetControlSettings() {
