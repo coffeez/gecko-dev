@@ -9,6 +9,7 @@
  */
 
 #include "vp8_rtcd.h"
+#include "vpx_ports/asmdefs_mmi.h"
 
 /****************************************************************************
  * Notes:
@@ -114,6 +115,62 @@ void vp8_dc_only_idct_add_mmi(short input_dc, unsigned char *pred_ptr,
                               int pred_stride, unsigned char *dst_ptr,
                               int dst_stride)
 {
+#if 1
+    int a1 = ((input_dc + 4) >> 3);
+    double ftmp[5];
+    int low32;
+
+    __asm__ volatile (
+        "xor        %[ftmp0],   %[ftmp0],       %[ftmp0]        \n\t"
+        "pshufh     %[a1],      %[a1],          %[ftmp0]        \n\t"
+        "ulw        %[low32],   0x00(%[pred_ptr])               \n\t"
+        "mtc1       %[low32],   %[ftmp1]                        \n\t"
+        "punpcklbh  %[ftmp2],   %[ftmp1],       %[ftmp0]        \n\t"
+        "paddsh     %[ftmp2],   %[ftmp2],       %[a1]           \n\t"
+        "packushb   %[ftmp1],   %[ftmp2],       %[ftmp0]        \n\t"
+        "gsswlc1    %[ftmp1],   0x03(%[dst_ptr])                \n\t"
+        "gsswrc1    %[ftmp1],   0x00(%[dst_ptr])                \n\t"
+        PTR_ADDU   "%[pred_ptr],%[pred_ptr],    %[pred_stride]  \n\t"
+        PTR_ADDU   "%[dst_ptr], %[dst_ptr],     %[dst_stride]   \n\t"
+
+        "ulw        %[low32],   0x00(%[pred_ptr])               \n\t"
+        "mtc1       %[low32],   %[ftmp1]                        \n\t"
+        "punpcklbh  %[ftmp2],   %[ftmp1],       %[ftmp0]        \n\t"
+        "paddsh     %[ftmp2],   %[ftmp2],       %[a1]           \n\t"
+        "packushb   %[ftmp1],   %[ftmp2],       %[ftmp0]        \n\t"
+        "gsswlc1    %[ftmp1],   0x03(%[dst_ptr])                \n\t"
+        "gsswrc1    %[ftmp1],   0x00(%[dst_ptr])                \n\t"
+        PTR_ADDU   "%[pred_ptr],%[pred_ptr],    %[pred_stride]  \n\t"
+        PTR_ADDU   "%[dst_ptr], %[dst_ptr],     %[dst_stride]   \n\t"
+
+        "ulw        %[low32],   0x00(%[pred_ptr])               \n\t"
+        "mtc1       %[low32],   %[ftmp1]                        \n\t"
+        "punpcklbh  %[ftmp2],   %[ftmp1],       %[ftmp0]        \n\t"
+        "paddsh     %[ftmp2],   %[ftmp2],       %[a1]           \n\t"
+        "packushb   %[ftmp1],   %[ftmp2],       %[ftmp0]        \n\t"
+        "gsswlc1    %[ftmp1],   0x03(%[dst_ptr])                \n\t"
+        "gsswrc1    %[ftmp1],   0x00(%[dst_ptr])                \n\t"
+        PTR_ADDU   "%[pred_ptr],%[pred_ptr],    %[pred_stride]  \n\t"
+        PTR_ADDU   "%[dst_ptr], %[dst_ptr],     %[dst_stride]   \n\t"
+
+        "ulw        %[low32],   0x00(%[pred_ptr])               \n\t"
+        "mtc1       %[low32],   %[ftmp1]                        \n\t"
+        "punpcklbh  %[ftmp2],   %[ftmp1],       %[ftmp0]        \n\t"
+        "paddsh     %[ftmp2],   %[ftmp2],       %[a1]           \n\t"
+        "packushb   %[ftmp1],   %[ftmp2],       %[ftmp0]        \n\t"
+        "gsswlc1    %[ftmp1],   0x03(%[dst_ptr])                \n\t"
+        "gsswrc1    %[ftmp1],   0x00(%[dst_ptr])                \n\t"
+        : [ftmp0]"=&f"(ftmp[0]),            [ftmp1]"=&f"(ftmp[1]),
+          [ftmp2]"=&f"(ftmp[2]),            [ftmp3]"=&f"(ftmp[3]),
+          [ftmp4]"=&f"(ftmp[4]),
+          [low32]"=&r"(low32),
+          [dst_ptr]"+&r"(dst_ptr),          [pred_ptr]"+&r"(pred_ptr)
+        : [dst_stride]"r"((mips_reg)dst_stride),
+          [pred_stride]"r"((mips_reg)pred_stride),
+          [a1]"f"(a1)
+        : "memory"
+    );
+#else
     int a1 = ((input_dc + 4) >> 3);
     int r, c;
 
@@ -136,6 +193,7 @@ void vp8_dc_only_idct_add_mmi(short input_dc, unsigned char *pred_ptr,
         pred_ptr += pred_stride;
     }
 
+#endif
 }
 
 void vp8_short_inv_walsh4x4_mmi(short *input, short *mb_dqcoeff)
