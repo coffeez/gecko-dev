@@ -42,6 +42,10 @@
 /* Android */
 #include "vpx_dsp_rtcd_armv7-android-gcc.h"
 
+#elif defined(VPX_LOONGSON_ASM)
+/* Loongson platforms. */
+#include "vpx_dsp_rtcd_loongson-linux-gcc.h"
+
 #else
 /* Assume generic GNU/GCC configuration. */
 #include "vpx_dsp_rtcd_generic-gnu.h"
