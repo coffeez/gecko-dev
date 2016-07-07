@@ -37,9 +37,12 @@
 #endif
 
 #elif defined(VPX_ARM_ASM)
-
 /* Android */
 #include "vpx_config_armv7-android-gcc.h"
+
+#elif defined(VPX_LOONGSON_ASM)
+/* Loongson platforms. */
+#include "vpx_config_loongson-linux-gcc.h"
 
 #else
 /* Assume generic GNU/GCC configuration. */
