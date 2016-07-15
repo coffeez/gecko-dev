@@ -158,6 +158,10 @@
         ['target_arch=="arm64"', {
           'dependencies': ['common_audio_neon',],
         }],
+        ['mips_arch_variant=="loongson"', {
+          'dependencies': ['common_audio_mmi',],
+          'cflags': ['-march=loongson3a',],
+        }],
         ['target_arch=="mipsel" and mips_arch_variant!="r6" and android_webview_build==0', {
           'sources': [
             'signal_processing/include/spl_inl_mips.h',
@@ -232,6 +236,17 @@
                 '-ffat-lto-objects',
               ],
             }],
+          ],
+        },
+      ],  # targets
+    }],
+    ['mips_arch_variant=="loongson"', {
+      'targets': [
+        {
+          'target_name': 'common_audio_mmi',
+          'type': 'static_library',
+          'sources': [
+            'resampler/sinc_resampler_mmi.cc',
           ],
         },
       ],  # targets

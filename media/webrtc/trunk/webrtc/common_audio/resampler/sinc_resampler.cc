@@ -142,6 +142,9 @@ void SincResampler::InitializeCPUSpecificFeatures() {
       Convolve_NEON : Convolve_C;
 }
 #endif
+#elif defined(WEBRTC_ARCH_MIPS) && defined(WEBRTC_LOONGSON_ASM)
+#define CONVOLVE_FUNC Convolve_MMI
+void SincResampler::InitializeCPUSpecificFeatures() {}
 #else
 // Unknown architecture.
 #define CONVOLVE_FUNC Convolve_C
