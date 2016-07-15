@@ -14,7 +14,13 @@ namespace {
 
 #if defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI32)
 // This is true for Mips O32 ABI.
-COMPILE_ASSERT(MIN_SYSCALL == __NR_Linux, min_syscall_should_be_4000);
+COMPILE_ASSERT(MIN_SYSCALL == __NR_O32_Linux, min_syscall_should_be_4000);
+#elif defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_ABI64)
+// This is true for Mips N64 ABI.
+COMPILE_ASSERT(MIN_SYSCALL == __NR_64_Linux, min_syscall_should_be_5000);
+#elif defined(__mips__) && (_MIPS_SIM == _MIPS_SIM_NABI32)
+// This is true for Mips N32 ABI.
+COMPILE_ASSERT(MIN_SYSCALL == __NR_N32_Linux, min_syscall_should_be_6000);
 #else
 // This true for supported architectures (Intel and ARM EABI).
 COMPILE_ASSERT(MIN_SYSCALL == 0u, min_syscall_should_always_be_zero);
