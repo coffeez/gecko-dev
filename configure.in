@@ -1140,8 +1140,20 @@ arm*)
     CPU_ARCH=arm
     ;;
 
-mips|mipsel|mips64|mips64el)
+mips)
     CPU_ARCH="mips"
+    ;;
+
+mipsel)
+    CPU_ARCH="mipsel"
+    ;;
+
+mips64)
+    CPU_ARCH="mips64"
+    ;;
+
+mips64el)
+    CPU_ARCH="mips64el"
     ;;
 
 aarch64*)

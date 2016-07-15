@@ -137,13 +137,31 @@ config("common_config") {
     }
   }
 
-  if (current_cpu == "mipsel") {
+  if (current_cpu == "mipsel" && mips_arch_variant != "loongson") {
     defines += [ "MIPS32_LE" ]
     if (mips_float_abi == "hard") {
       defines += [ "MIPS_FPU_LE" ]
     }
     if (mips_arch_variant == "r2") {
       defines += [ "MIPS32_R2_LE" ]
+    }
+    if (mips_dsp_rev == 1) {
+      defines += [ "MIPS_DSP_R1_LE" ]
+    } else if (mips_dsp_rev == 2) {
+      defines += [
+        "MIPS_DSP_R1_LE",
+        "MIPS_DSP_R2_LE",
+      ]
+    }
+  }
+
+  if (current_cpu == "mips64el" && mips_arch_variant != "loongson") {
+    defines += [ "MIPS64_LE" ]
+    if (mips_float_abi == "hard") {
+      defines += [ "MIPS_FPU_LE" ]
+    }
+    if (mips_arch_variant == "r2") {
+      defines += [ "MIPS64_R2_LE" ]
     }
     if (mips_dsp_rev == 1) {
       defines += [ "MIPS_DSP_R1_LE" ]

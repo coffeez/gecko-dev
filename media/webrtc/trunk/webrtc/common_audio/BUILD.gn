@@ -135,12 +135,12 @@ source_set("common_audio") {
     deps += [ ":common_audio_neon" ]
   }
 
-  if (mips_arch_variant == "loongson") {
+  if ((current_cpu == "mipsel" || current_cpu == "mips64el") && mips_arch_variant == "loongson") {
       deps += [ ":common_audio_mmi" ]
       cflags += [ "-march=loongson3a" ]
   }
 
-  if (current_cpu == "mipsel") {
+  if (current_cpu == "mipsel" && mips_arch_variant != "loongson") {
     sources += [
       "signal_processing/include/spl_inl_mips.h",
       "signal_processing/complex_bit_reverse_mips.c",
@@ -159,7 +159,7 @@ source_set("common_audio") {
     sources += [ "signal_processing/complex_fft.c" ]
   }
 
-  if (current_cpu != "arm" && current_cpu != "mipsel") {
+  if (current_cpu != "arm" && current_cpu != "mipsel" && current_cpu != "mips64el") {
     sources += [
       "signal_processing/complex_bit_reverse.c",
       "signal_processing/filter_ar_fast_q12.c",
@@ -238,7 +238,7 @@ if (rtc_build_armv7_neon || current_cpu == "arm64") {
   }
 }
 
-if (mips_arch_variant == "loongson") {
+if ((current_cpu == "mipsel" || current_cpu == "mips64el") && mips_arch_variant == "loongson") {
   source_set("common_audio_mmi") {
     sources = [
       "resampler/sinc_resampler_mmi.cc",
