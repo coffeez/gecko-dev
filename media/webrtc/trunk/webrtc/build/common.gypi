@@ -187,7 +187,7 @@
       ['target_arch=="arm" or target_arch=="arm64" or target_arch=="mipsel" or target_arch=="mips64el"', {
         'prefer_fixed_point%': 1,
       }],
-      ['OS!="ios" and (target_arch!="arm" or arm_version>=7) and target_arch!="mips64el" and build_with_mozilla==0', {
+      ['OS!="ios" and (target_arch!="arm" or arm_version>=7) and target_arch!="mipsel" and target_arch!="mips64el" and build_with_mozilla==0', {
         'rtc_use_openmax_dl%': 1,
       }, {
         'rtc_use_openmax_dl%': 0,

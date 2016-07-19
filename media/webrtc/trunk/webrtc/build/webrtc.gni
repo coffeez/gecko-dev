@@ -96,7 +96,7 @@ declare_args() {
   }
 
   if (!is_ios && (current_cpu != "arm" || arm_version >= 7) &&
-      current_cpu != "mips64el") {
+      current_cpu != "mipsel" && current_cpu != "mips64el") {
     rtc_use_openmax_dl = true
   } else {
     rtc_use_openmax_dl = false
