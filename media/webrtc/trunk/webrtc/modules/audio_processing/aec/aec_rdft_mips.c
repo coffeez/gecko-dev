@@ -270,7 +270,8 @@ static void bitrv2_128_mips(float* a) {
 
 static void cft1st_128_mips(float* a) {
   float f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14;
-  int a_ptr, p1_rdft, p2_rdft, count;
+  mips_reg a_ptr, p1_rdft, p2_rdft;
+  int count;
   const float* first = rdft_wk3ri_first;
   const float* second = rdft_wk3ri_second;
 
@@ -341,9 +342,9 @@ static void cft1st_128_mips(float* a) {
     "sub.s      %[f7],        %[f4],        %[f0]                       \n\t"
     "add.s      %[f4],        %[f4],        %[f0]                       \n\t"
     // prepare for loop
-    "addiu      %[a_ptr],     %[a],         64                          \n\t"
-    "addiu      %[p1_rdft],   %[rdft_w],    8                           \n\t"
-    "addiu      %[p2_rdft],   %[rdft_w],    16                          \n\t"
+    PTR_ADDIU  "%[a_ptr],     %[a],         64                          \n\t"
+    PTR_ADDIU  "%[p1_rdft],   %[rdft_w],    8                           \n\t"
+    PTR_ADDIU  "%[p2_rdft],   %[rdft_w],    16                          \n\t"
     "addiu      %[count],     $zero,        7                           \n\t"
     // finish second 8
     "mul.s      %[f2],        %[f9],        %[f2]                       \n\t"
@@ -499,12 +500,12 @@ static void cft1st_128_mips(float* a) {
     "swc1       %[f13],       60(%[a_ptr])                              \n\t"
     "addiu      %[count],     %[count],     -1                          \n\t"
     "lwc1       %[f9],        8(%[p1_rdft])                             \n\t"
-    "addiu      %[a_ptr],     %[a_ptr],     64                          \n\t"
-    "addiu      %[p1_rdft],   %[p1_rdft],   8                           \n\t"
-    "addiu      %[p2_rdft],   %[p2_rdft],   16                          \n\t"
-    "addiu      %[first],     %[first],     8                           \n\t"
+    PTR_ADDIU  "%[a_ptr],     %[a_ptr],     64                          \n\t"
+    PTR_ADDIU  "%[p1_rdft],   %[p1_rdft],   8                           \n\t"
+    PTR_ADDIU  "%[p2_rdft],   %[p2_rdft],   16                          \n\t"
+    PTR_ADDIU  "%[first],     %[first],     8                           \n\t"
     "bgtz       %[count],     1b                                        \n\t"
-    " addiu     %[second],    %[second],    8                           \n\t"
+    PTR_ADDIU  "%[second],    %[second],    8                           \n\t"
     ".set       pop                                                     \n\t"
     : [f0] "=&f" (f0), [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3),
       [f4] "=&f" (f4), [f5] "=&f" (f5), [f6] "=&f" (f6), [f7] "=&f" (f7),
@@ -519,11 +520,12 @@ static void cft1st_128_mips(float* a) {
 
 static void cftmdl_128_mips(float* a) {
   float f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14;
-  int tmp_a, count;
+  mips_reg tmp_a;
+  int count;
   __asm __volatile (
     ".set       push                                      \n\t"
     ".set       noreorder                                 \n\t"
-    "addiu      %[tmp_a],   %[a],         0               \n\t"
+    PTR_ADDIU  "%[tmp_a],   %[a],         0               \n\t"
     "addiu      %[count],   $zero,        4               \n\t"
    "1:                                                    \n\t"
     "addiu      %[count],   %[count],     -1              \n\t"
@@ -560,7 +562,7 @@ static void cftmdl_128_mips(float* a) {
     "swc1       %[f3],      32(%[tmp_a])                  \n\t"
     "swc1       %[f0],      96(%[tmp_a])                  \n\t"
     "bgtz       %[count],   1b                            \n\t"
-    " addiu     %[tmp_a],   %[tmp_a],     8               \n\t"
+    PTR_ADDIU  "%[tmp_a],   %[tmp_a],     8               \n\t"
     ".set       pop                                       \n\t"
     : [f0] "=&f" (f0), [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3),
       [f4] "=&f" (f4), [f5] "=&f" (f5), [f6] "=&f" (f6), [f7] "=&f" (f7),
@@ -572,7 +574,7 @@ static void cftmdl_128_mips(float* a) {
   __asm __volatile (
     ".set       push                                      \n\t"
     ".set       noreorder                                 \n\t"
-    "addiu      %[tmp_a],   %[a],         128             \n\t"
+    PTR_ADDIU  "%[tmp_a],   %[a],         128             \n\t"
     "addiu      %[count],   $zero,        4               \n\t"
    "1:                                                    \n\t"
     "addiu      %[count],   %[count],     -1              \n\t"
@@ -617,7 +619,7 @@ static void cftmdl_128_mips(float* a) {
     "swc1       %[f1],      96(%[tmp_a])                  \n\t"
     "swc1       %[f3],      100(%[tmp_a])                 \n\t"
     "bgtz       %[count],   1b                            \n\t"
-    " addiu     %[tmp_a],   %[tmp_a],     8               \n\t"
+    PTR_ADDIU  "%[tmp_a],   %[tmp_a],     8               \n\t"
     ".set       pop                                       \n\t"
     : [f0] "=&f" (f0), [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3),
       [f4] "=&f" (f4), [f5] "=&f" (f5), [f6] "=&f" (f6), [f7] "=&f" (f7),
@@ -634,7 +636,7 @@ static void cftmdl_128_mips(float* a) {
   __asm __volatile (
     ".set       push                                                    \n\t"
     ".set       noreorder                                               \n\t"
-    "addiu      %[tmp_a],     %[a],         256                         \n\t"
+    PTR_ADDIU  "%[tmp_a],     %[a],         256                         \n\t"
     "addiu      %[count],     $zero,        4                           \n\t"
    "1:                                                                  \n\t"
     "addiu      %[count],     %[count],     -1                          \n\t"
@@ -705,7 +707,7 @@ static void cftmdl_128_mips(float* a) {
     "swc1       %[f6],        96(%[tmp_a])                              \n\t"
     "swc1       %[f0],        100(%[tmp_a])                             \n\t"
     "bgtz       %[count],     1b                                        \n\t"
-    " addiu     %[tmp_a],     %[tmp_a],     8                           \n\t"
+    PTR_ADDIU  "%[tmp_a],     %[tmp_a],     8                           \n\t"
     ".set       pop                                                     \n\t"
     : [f0] "=&f" (f0), [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3),
       [f4] "=&f" (f4), [f5] "=&f" (f5), [f6] "=&f" (f6), [f7] "=&f" (f7),
@@ -721,7 +723,7 @@ static void cftmdl_128_mips(float* a) {
   __asm __volatile (
     ".set       push                                                       \n\t"
     ".set       noreorder                                                  \n\t"
-    "addiu      %[tmp_a],       %[a],           384                        \n\t"
+    PTR_ADDIU  "%[tmp_a],       %[a],           384                        \n\t"
     "addiu      %[count],       $zero,          4                          \n\t"
    "1:                                                                     \n\t"
     "addiu      %[count],       %[count],       -1                         \n\t"
@@ -792,7 +794,7 @@ static void cftmdl_128_mips(float* a) {
     "swc1       %[f3],          96(%[tmp_a])                               \n\t"
     "swc1       %[f1],          100(%[tmp_a])                              \n\t"
     "bgtz       %[count],       1b                                         \n\t"
-    " addiu     %[tmp_a],       %[tmp_a],       8                          \n\t"
+    PTR_ADDIU  "%[tmp_a],       %[tmp_a],       8                          \n\t"
     ".set       pop                                                        \n\t"
     : [f0] "=&f" (f0), [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3),
       [f4] "=&f" (f4), [f5] "=&f" (f5), [f6] "=&f" (f6), [f7] "=&f" (f7),
@@ -805,7 +807,8 @@ static void cftmdl_128_mips(float* a) {
 
 static void cftfsub_128_mips(float* a) {
   float f0, f1, f2, f3, f4, f5, f6, f7, f8;
-  int tmp_a, count;
+  mips_reg tmp_a;
+  int count;
 
   cft1st_128(a);
   cftmdl_128(a);
@@ -813,7 +816,7 @@ static void cftfsub_128_mips(float* a) {
   __asm __volatile (
     ".set       push                                      \n\t"
     ".set       noreorder                                 \n\t"
-    "addiu      %[tmp_a],       %[a],         0           \n\t"
+    PTR_ADDIU  "%[tmp_a],       %[a],         0           \n\t"
     "addiu      %[count],       $zero,        16          \n\t"
    "1:                                                    \n\t"
     "addiu      %[count],       %[count],     -1          \n\t"
@@ -850,7 +853,7 @@ static void cftfsub_128_mips(float* a) {
     "swc1       %[f3],          128(%[tmp_a])             \n\t"
     "swc1       %[f0],          384(%[tmp_a])             \n\t"
     "bgtz       %[count],       1b                        \n\t"
-    " addiu     %[tmp_a],       %[tmp_a],   8             \n\t"
+    PTR_ADDIU  "%[tmp_a],       %[tmp_a],   8             \n\t"
     ".set       pop                                       \n\t"
     : [f0] "=&f" (f0), [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3),
       [f4] "=&f" (f4), [f5] "=&f" (f5), [f6] "=&f" (f6), [f7] "=&f" (f7),
@@ -863,7 +866,8 @@ static void cftfsub_128_mips(float* a) {
 
 static void cftbsub_128_mips(float* a) {
   float f0, f1, f2, f3, f4, f5, f6, f7, f8;
-  int tmp_a, count;
+  mips_reg tmp_a;
+  int count;
 
   cft1st_128(a);
   cftmdl_128(a);
@@ -871,7 +875,7 @@ static void cftbsub_128_mips(float* a) {
   __asm __volatile (
     ".set       push                                        \n\t"
     ".set       noreorder                                   \n\t"
-    "addiu      %[tmp_a],   %[a],           0               \n\t"
+    PTR_ADDIU  "%[tmp_a],   %[a],           0               \n\t"
     "addiu      %[count],   $zero,          16              \n\t"
    "1:                                                      \n\t"
     "addiu      %[count],   %[count],       -1              \n\t"
@@ -909,7 +913,7 @@ static void cftbsub_128_mips(float* a) {
     "swc1       %[f0],      384(%[tmp_a])                   \n\t"
     "swc1       %[f4],       4(%[tmp_a])                     \n\t"
     "bgtz       %[count],   1b                              \n\t"
-    " addiu     %[tmp_a],   %[tmp_a],       8               \n\t"
+    PTR_ADDIU  "%[tmp_a],   %[tmp_a],       8               \n\t"
     ".set       pop                                         \n\t"
     : [f0] "=&f" (f0), [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3),
       [f4] "=&f" (f4), [f5] "=&f" (f5), [f6] "=&f" (f6), [f7] "=&f" (f7),
@@ -961,10 +965,10 @@ static void rftfsub_128_mips(float* a) {
     "swc1      %[f2],       0(%[a2])                            \n\t"
     "swc1      %[f3],       4(%[a1])                            \n\t"
     "swc1      %[f4],       4(%[a2])                            \n\t"
-    "addiu     %[a1],       %[a1],        8                     \n\t"
-    "addiu     %[a2],       %[a2],        -8                    \n\t"
-    "addiu     %[c1],       %[c1],        4                     \n\t"
-    "addiu     %[c2],       %[c2],        -4                    \n\t"
+    PTR_ADDIU "%[a1],       %[a1],        8                     \n\t"
+    PTR_ADDIU "%[a2],       %[a2],        -8                    \n\t"
+    PTR_ADDIU "%[c1],       %[c1],        4                     \n\t"
+    PTR_ADDIU "%[c2],       %[c2],        -4                    \n\t"
    "1:                                                          \n\t"
     "lwc1      %[f6],       0(%[c2])                            \n\t"
     "lwc1      %[f1],       0(%[a1])                            \n\t"
@@ -1024,16 +1028,16 @@ static void rftfsub_128_mips(float* a) {
     "add.s     %[f12],      %[f12],       %[f8]                 \n\t"
     "sub.s     %[f13],      %[f13],       %[f10]                \n\t"
     "sub.s     %[f14],      %[f14],       %[f10]                \n\t"
-    "addiu     %[c2],       %[c2],        -8                    \n\t"
-    "addiu     %[c1],       %[c1],        8                     \n\t"
+    PTR_ADDIU "%[c2],       %[c2],        -8                    \n\t"
+    PTR_ADDIU "%[c1],       %[c1],        8                     \n\t"
     "swc1      %[f11],      8(%[a1])                            \n\t"
     "swc1      %[f12],      -8(%[a2])                           \n\t"
     "swc1      %[f13],      12(%[a1])                           \n\t"
     "swc1      %[f14],      -4(%[a2])                           \n\t"
-    "addiu     %[a1],       %[a1],        16                    \n\t"
+    PTR_ADDIU "%[a1],       %[a1],        16                    \n\t"
     "addiu     %[count],    %[count],     -1                    \n\t"
     "bgtz      %[count],    1b                                  \n\t"
-    " addiu    %[a2],       %[a2],        -16                   \n\t"
+    PTR_ADDIU "%[a2],       %[a2],        -16                   \n\t"
     ".set      pop                                              \n\t"
     : [a1] "+r" (a1), [a2] "+r" (a2), [c1] "+r" (c1), [c2] "+r" (c2),
       [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3), [f4] "=&f" (f4),
@@ -1091,10 +1095,10 @@ static void rftbsub_128_mips(float* a) {
     "swc1      %[f2],       0(%[a2])                            \n\t"
     "swc1      %[f3],       4(%[a1])                            \n\t"
     "swc1      %[f4],       4(%[a2])                            \n\t"
-    "addiu     %[a1],       %[a1],        8                     \n\t"
-    "addiu     %[a2],       %[a2],        -8                    \n\t"
-    "addiu     %[c1],       %[c1],        4                     \n\t"
-    "addiu     %[c2],       %[c2],        -4                    \n\t"
+    PTR_ADDIU "%[a1],       %[a1],        8                     \n\t"
+    PTR_ADDIU "%[a2],       %[a2],        -8                    \n\t"
+    PTR_ADDIU "%[c1],       %[c1],        4                     \n\t"
+    PTR_ADDIU "%[c2],       %[c2],        -4                    \n\t"
    "1:                                                          \n\t"
     "lwc1      %[f6],       0(%[c2])                            \n\t"
     "lwc1      %[f1],       0(%[a1])                            \n\t"
@@ -1154,16 +1158,16 @@ static void rftbsub_128_mips(float* a) {
     "add.s     %[f12],      %[f12],       %[f8]                 \n\t"
     "sub.s     %[f13],      %[f10],       %[f13]                \n\t"
     "sub.s     %[f14],      %[f10],       %[f14]                \n\t"
-    "addiu     %[c2],       %[c2],        -8                    \n\t"
-    "addiu     %[c1],       %[c1],        8                     \n\t"
+    PTR_ADDIU "%[c2],       %[c2],        -8                    \n\t"
+    PTR_ADDIU "%[c1],       %[c1],        8                     \n\t"
     "swc1      %[f11],      8(%[a1])                            \n\t"
     "swc1      %[f12],      -8(%[a2])                           \n\t"
     "swc1      %[f13],      12(%[a1])                           \n\t"
     "swc1      %[f14],      -4(%[a2])                           \n\t"
-    "addiu     %[a1],       %[a1],        16                    \n\t"
+    PTR_ADDIU "%[a1],       %[a1],        16                    \n\t"
     "addiu     %[count],    %[count],     -1                    \n\t"
     "bgtz      %[count],    1b                                  \n\t"
-    " addiu    %[a2],       %[a2],        -16                   \n\t"
+    PTR_ADDIU "%[a2],       %[a2],        -16                   \n\t"
     ".set      pop                                              \n\t"
     : [a1] "+r" (a1), [a2] "+r" (a2), [c1] "+r" (c1), [c2] "+r" (c2),
       [f1] "=&f" (f1), [f2] "=&f" (f2), [f3] "=&f" (f3), [f4] "=&f" (f4),
