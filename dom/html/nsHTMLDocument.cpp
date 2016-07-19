@@ -2860,6 +2860,16 @@ nsHTMLDocument::EditingStateChanged()
     // the document for compatibility reasons.
     if (designMode && oldState == eOff) {
       editor->BeginningOfDocument();
+      nsCOMPtr<nsIContentViewer> cv;
+      docshell->GetContentViewer(getter_AddRefs(cv));
+      if (cv) {
+        bool isSticky;
+        cv->GetSticky(&isSticky);
+        cv->SetSticky(false);
+        cv->Hide();
+        cv->Show();
+        cv->SetSticky(isSticky);
+      }
     }
 
     if (putOffToRemoveScriptBlockerUntilModifyingEditingState) {
