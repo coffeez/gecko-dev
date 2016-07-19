@@ -101,7 +101,7 @@ void WebRtcIsacfix_Spec2TimeNeon(int16_t* inreQ7,
                                  int32_t* outre2Q16);
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 void WebRtcIsacfix_Time2SpecMIPS(int16_t* inre1Q9,
                                  int16_t* inre2Q9,
                                  int16_t* outre,
@@ -189,7 +189,7 @@ void WebRtcIsacfix_FilterMaLoopNeon(int16_t input0,
                                     int32_t* ptr2);
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
                                const int16_t* __restrict x,
                                int16_t N,

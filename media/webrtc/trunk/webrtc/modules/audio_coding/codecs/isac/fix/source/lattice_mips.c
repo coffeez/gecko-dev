@@ -22,7 +22,7 @@ void WebRtcIsacfix_FilterArLoop(int16_t* ar_g_Q0,     // Input samples
 
   for (n = 0; n < HALF_SUBFRAMELEN - 1; n++) {
     int count = order_coef - 1;
-    int offset;
+    mips_reg offset;
 #if !defined(MIPS_DSP_R1_LE)
     int16_t* tmp_cth;
     int16_t* tmp_sth;
@@ -46,9 +46,9 @@ void WebRtcIsacfix_FilterArLoop(int16_t* ar_g_Q0,     // Input samples
       "lhx           %[r1],        %[offset](%[sth_Q15])                 \n\t"
       "lhx           %[r2],        %[offset](%[ar_g_Q0])                 \n\t"
 #else
-      "addu          %[tmp_cth],   %[cth_Q15],             %[offset]     \n\t"
-      "addu          %[tmp_sth],   %[sth_Q15],             %[offset]     \n\t"
-      "addu          %[tmp_arg],   %[ar_g_Q0],             %[offset]     \n\t"
+      PTR_ADDU      "%[tmp_cth],   %[cth_Q15],             %[offset]     \n\t"
+      PTR_ADDU      "%[tmp_sth],   %[sth_Q15],             %[offset]     \n\t"
+      PTR_ADDU      "%[tmp_arg],   %[ar_g_Q0],             %[offset]     \n\t"
       "lh            %[r0],        0(%[tmp_cth])                         \n\t"
       "lh            %[r1],        0(%[tmp_sth])                         \n\t"
       "lh            %[r2],        0(%[tmp_arg])                         \n\t"
@@ -68,7 +68,7 @@ void WebRtcIsacfix_FilterArLoop(int16_t* ar_g_Q0,     // Input samples
       "addiu         %[t0],        %[t0],                  0x4000        \n\t"
       "sra           %[t0],        %[t0],                  15            \n\t"
 #endif
-      "addiu         %[offset],    %[offset],              2             \n\t"
+      PTR_ADDIU     "%[offset],    %[offset],              2             \n\t"
 #if defined(MIPS_DSP_R1_LE)
       "shll_s.w      %[t1],        %[t1],                  16            \n\t"
       "shll_s.w      %[t_ar],      %[t0],                  16            \n\t"
@@ -78,7 +78,7 @@ void WebRtcIsacfix_FilterArLoop(int16_t* ar_g_Q0,     // Input samples
       "movz          %[t1],        %[max_q16],             %[r0]         \n\t"
       "movz          %[t0],        %[max_q16],             %[r1]         \n\t"
 #endif
-      "addu          %[offset],    %[offset],              %[ar_g_Q0]    \n\t"
+      PTR_ADDU      "%[offset],    %[offset],              %[ar_g_Q0]    \n\t"
 #if defined(MIPS_DSP_R1_LE)
       "sra           %[t1],        %[t1],                  16            \n\t"
       "sra           %[t_ar],      %[t_ar],                16            \n\t"
@@ -168,7 +168,7 @@ void WebRtcIsacfix_FilterMaLoopMIPS(int16_t input0,  // Filter coefficient
     "mult          $ac1,         %[t1],        %[input2]     \n\t"
     "mult          $ac2,         %[t2],        %[input2]     \n\t"
     "mult          $ac3,         %[t3],        %[input2]     \n\t"
-    "addiu         %[ptr0],      %[ptr0],      16            \n\t"
+    PTR_ADDIU     "%[ptr0],      %[ptr0],      16            \n\t"
     "extr_rs.w     %[t0],        $ac0,         16            \n\t"
     "extr_rs.w     %[t1],        $ac1,         16            \n\t"
     "extr_rs.w     %[t2],        $ac2,         16            \n\t"
@@ -190,7 +190,7 @@ void WebRtcIsacfix_FilterMaLoopMIPS(int16_t input0,  // Filter coefficient
     "mult          $ac1,         %[t1],        %[input0]     \n\t"
     "mult          $ac2,         %[t2],        %[input0]     \n\t"
     "mult          $ac3,         %[t3],        %[input0]     \n\t"
-    "addiu         %[ptr2],      %[ptr2],      16            \n\t"
+    PTR_ADDIU     "%[ptr2],      %[ptr2],      16            \n\t"
     "extr_rs.w     %[t0],        $ac0,         15            \n\t"
     "extr_rs.w     %[t1],        $ac1,         15            \n\t"
     "extr_rs.w     %[t2],        $ac2,         15            \n\t"
@@ -204,13 +204,13 @@ void WebRtcIsacfix_FilterMaLoopMIPS(int16_t input0,  // Filter coefficient
     "sw            %[t2],        8(%[ptr1])                  \n\t"
     "sw            %[t3],        12(%[ptr1])                 \n\t"
     "bgtz          %[n],         1b                          \n\t"
-    " addiu        %[ptr1],      %[ptr1],      16            \n\t"
+    PTR_ADDIU     "%[ptr1],      %[ptr1],      16            \n\t"
     "beq           %[m],         %0,           3f            \n\t"
     " nop                                                    \n\t"
    "2:                                                       \n\t"
     "lw            %[r0],        0(%[ptr0])                  \n\t"
     "lw            %[t0],        0(%[ptr2])                  \n\t"
-    "addiu         %[ptr0],      %[ptr0],      4             \n\t"
+    PTR_ADDIU     "%[ptr0],      %[ptr0],      4             \n\t"
     "mult          $ac0,         %[r0],        %[input0]     \n\t"
     "mult          $ac1,         %[r0],        %[input1]     \n\t"
     "extr_rs.w     %[r1],        $ac0,         15            \n\t"
@@ -220,13 +220,13 @@ void WebRtcIsacfix_FilterMaLoopMIPS(int16_t input0,  // Filter coefficient
     "extr_rs.w     %[t0],        $ac0,         16            \n\t"
     "sw            %[t0],        0(%[ptr2])                  \n\t"
     "mult          $ac0,         %[t0],        %[input0]     \n\t"
-    "addiu         %[ptr2],      %[ptr2],      4             \n\t"
+    PTR_ADDIU     "%[ptr2],      %[ptr2],      4             \n\t"
     "addiu         %[m],         %[m],         -1            \n\t"
     "extr_rs.w     %[t0],        $ac0,         15            \n\t"
     "addu          %[t0],        %[t0],        %[t1]         \n\t"
     "sw            %[t0],        0(%[ptr1])                  \n\t"
     "bgtz          %[m],         2b                          \n\t"
-    " addiu        %[ptr1],      %[ptr1],      4             \n\t"
+    PTR_ADDIU     "%[ptr1],      %[ptr1],      4             \n\t"
    "3:                                                       \n\t"
     ".set          pop                                       \n\t"
     : [r0] "=&r" (r0), [r1] "=&r" (r1), [r2] "=&r" (r2),
@@ -270,14 +270,14 @@ void WebRtcIsacfix_FilterMaLoopMIPS(int16_t input0,  // Filter coefficient
    "1:                                                       \n\t"
     "lw            %[r0],        0(%[ptr0])                  \n\t"
     "lw            %[r1],        0(%[ptr2])                  \n\t"
-    "addiu         %[ptr0],      %[ptr0],       4            \n\t"
+    PTR_ADDIU     "%[ptr0],      %[ptr0],       4            \n\t"
     "sra           %[r2],        %[r0],         16           \n\t"
     "andi          %[r0],        %[r0],         0xFFFF       \n\t"
     "mul           %[r3],        %[r2],         %[input0]    \n\t"
     "mul           %[r4],        %[r0],         %[input0]    \n\t"
     "mul           %[r2],        %[r2],         %[input1]    \n\t"
     "mul           %[r0],        %[r0],         %[input1]    \n\t"
-    "addiu         %[ptr2],      %[ptr2],       4            \n\t"
+    PTR_ADDIU     "%[ptr2],      %[ptr2],       4            \n\t"
     "sll           %[r3],        %[r3],         1            \n\t"
     "sra           %[r4],        %[r4],         1            \n\t"
     "addiu         %[r4],        %[r4],         0x2000       \n\t"
@@ -313,7 +313,7 @@ void WebRtcIsacfix_FilterMaLoopMIPS(int16_t input0,  // Filter coefficient
     "addu          %[r0],        %[r0],         %[r2]        \n\t"
     "sw            %[r0],        0(%[ptr1])                  \n\t"
     "bgtz          %[n],         1b                          \n\t"
-    " addiu        %[ptr1],      %[ptr1],       4            \n\t"
+    PTR_ADDIU     "%[ptr1],      %[ptr1],       4            \n\t"
     ".set          pop                                       \n\t"
     : [t16a] "=&r" (t16a), [t16b] "=&r" (t16b), [r0] "=&r" (r0),
       [r1] "=&r" (r1), [r2] "=&r" (r2), [r3] "=&r" (r3),

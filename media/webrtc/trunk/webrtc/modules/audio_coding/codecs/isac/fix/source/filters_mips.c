@@ -72,7 +72,7 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
     "madd          %[r7],          %[r7]                           \n\t"
 #endif
     "bnez          %[loop_size],   1b                              \n\t"
-    " addiu        %[in],          %[in],          16              \n\t"
+    PTR_ADDIU     "%[in],          %[in],          16              \n\t"
    "2:                                                             \n\t"
     "beqz          %[count],       4f                              \n\t"
 #if defined(MIPS_DSP_R1_LE)
@@ -86,7 +86,7 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
     "addiu         %[count],       %[count],       -1              \n\t"
     "madd          %[r0],          %[r0]                           \n\t"
     "bnez          %[count],       3b                              \n\t"
-    " addiu        %[in],          %[in],          2               \n\t"
+    PTR_ADDIU     "%[in],          %[in],          2               \n\t"
 #if defined(MIPS_DSP_R1_LE)
     "extr.w        %[r0],          $ac0,           31              \n\t"
 #else
@@ -172,9 +172,9 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
         "madd        %[r4],          %[r5]                         \n\t"
         "madd        %[r6],          %[r7]                         \n\t"
 #endif
-        "addiu       %[in],          %[in],          8             \n\t"
+        PTR_ADDIU   "%[in],          %[in],          8             \n\t"
         "bnez        %[loop_size],   1b                            \n\t"
-        " addiu      %[in1],         %[in1],         8             \n\t"
+        PTR_ADDIU   "%[in1],         %[in1],         8             \n\t"
        "2:                                                         \n\t"
         "beqz        %[count],       4f                            \n\t"
         " mflo       %[r0]                                         \n\t"
@@ -183,10 +183,10 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
         "lh          %[r0],          0(%[in])                      \n\t"
         "lh          %[r1],          0(%[in1])                     \n\t"
         "addiu       %[count],       %[count],       -1            \n\t"
-        "addiu       %[in],          %[in],          2             \n\t"
+        PTR_ADDIU   "%[in],          %[in],          2             \n\t"
         "madd        %[r0],          %[r1]                         \n\t"
         "bnez        %[count],       3b                            \n\t"
-        " addiu      %[in1],         %[in1],         2             \n\t"
+        PTR_ADDIU   "%[in1],         %[in1],         2             \n\t"
         "mflo        %[r0]                                         \n\t"
        "4:                                                         \n\t"
         ".set        pop                                           \n\t"
@@ -241,9 +241,9 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
         "madd        %[r4],          %[r5]                         \n\t"
         "madd        %[r6],          %[r7]                         \n\t"
 #endif
-        "addiu       %[in],          %[in],          8             \n\t"
+        PTR_ADDIU   "%[in],          %[in],          8             \n\t"
         "bnez        %[loop_size],   1b                            \n\t"
-        " addiu      %[in1],         %[in1],         8             \n\t"
+        PTR_ADDIU   "%[in1],         %[in1],         8             \n\t"
        "2:                                                         \n\t"
         "beqz        %[count],       4f                            \n\t"
         " mfhi       %[r0]                                         \n\t"
@@ -252,10 +252,10 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
         "lh          %[r0],          0(%[in])                      \n\t"
         "lh          %[r1],          0(%[in1])                     \n\t"
         "addiu       %[count],       %[count],       -1            \n\t"
-        "addiu       %[in],          %[in],          2             \n\t"
+        PTR_ADDIU   "%[in],          %[in],          2             \n\t"
         "madd        %[r0],          %[r1]                         \n\t"
         "bnez        %[count],       3b                            \n\t"
-        " addiu      %[in1],         %[in1],         2             \n\t"
+        PTR_ADDIU   "%[in1],         %[in1],         2             \n\t"
         "mfhi        %[r0]                                         \n\t"
        "4:                                                         \n\t"
         ".set        pop                                           \n\t"
@@ -313,9 +313,9 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
         "madd        %[r4],          %[r5]                         \n\t"
         "madd        %[r6],          %[r7]                         \n\t"
 #endif
-        "addiu       %[in],          %[in],          8             \n\t"
+        PTR_ADDIU   "%[in],          %[in],          8             \n\t"
         "bnez        %[loop_size],   1b                            \n\t"
-        " addiu      %[in1],         %[in1],         8             \n\t"
+        PTR_ADDIU   "%[in1],         %[in1],         8             \n\t"
        "2:                                                         \n\t"
         "beqz        %[count],       4f                            \n\t"
 #if defined(MIPS_DSP_R1_LE)
@@ -327,10 +327,10 @@ int WebRtcIsacfix_AutocorrMIPS(int32_t* __restrict r,
         "lh          %[r0],          0(%[in])                      \n\t"
         "lh          %[r1],          0(%[in1])                     \n\t"
         "addiu       %[count],       %[count],       -1            \n\t"
-        "addiu       %[in],          %[in],          2             \n\t"
+        PTR_ADDIU   "%[in],          %[in],          2             \n\t"
         "madd        %[r0],          %[r1]                         \n\t"
         "bnez        %[count],       3b                            \n\t"
-        " addiu      %[in1],         %[in1],         2             \n\t"
+        PTR_ADDIU   "%[in1],         %[in1],         2             \n\t"
 #if defined(MIPS_DSP_R1_LE)
         "extrv.w     %[r0],          $ac0,           %[scaling]    \n\t"
 #else

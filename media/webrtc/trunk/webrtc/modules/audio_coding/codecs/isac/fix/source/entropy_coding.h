@@ -166,7 +166,7 @@ void WebRtcIsacfix_MatrixProduct2Neon(const int16_t matrix0[],
                                       const int matrix0_index_step);
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 void WebRtcIsacfix_MatrixProduct1MIPS(const int16_t matrix0[],
                                       const int32_t matrix1[],
                                       int32_t matrix_product[],

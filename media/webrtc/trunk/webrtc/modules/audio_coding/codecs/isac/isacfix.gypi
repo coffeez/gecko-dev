@@ -95,7 +95,7 @@
             }],
           ],
         }],
-        ['target_arch=="mipsel" and mips_arch_variant!="loongson" and mips_arch_variant!="r6" and android_webview_build==0', {
+        ['(target_arch=="mipsel" or target_arch=="mips64el") and mips_arch_variant!="r6" and android_webview_build==0', {
           'sources': [
             'fix/source/entropy_coding_mips.c',
             'fix/source/filters_mips.c',
