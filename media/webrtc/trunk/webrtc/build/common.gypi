@@ -184,7 +184,7 @@
         'build_libjpeg%': 0,
         'enable_protobuf%': 0,
       }],
-      ['target_arch=="arm" or target_arch=="arm64"', {
+      ['target_arch=="arm" or target_arch=="arm64" or target_arch=="mipsel" or target_arch=="mips64el"', {
         'prefer_fixed_point%': 1,
       }],
       ['OS!="ios" and (target_arch!="arm" or arm_version>=7) and target_arch!="mips64el" and build_with_mozilla==0', {
