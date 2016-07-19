@@ -135,6 +135,11 @@ source_set("common_audio") {
     deps += [ ":common_audio_neon" ]
   }
 
+  if (mips_arch_variant == "loongson") {
+      deps += [ ":common_audio_mmi" ]
+      cflags += [ "-march=loongson3a" ]
+  }
+
   if (current_cpu == "mipsel") {
     sources += [
       "signal_processing/include/spl_inl_mips.h",
@@ -230,5 +235,13 @@ if (rtc_build_armv7_neon || current_cpu == "arm64") {
         "-ffat-lto-objects",
       ]
     }
+  }
+}
+
+if (mips_arch_variant == "loongson") {
+  source_set("common_audio_mmi") {
+    sources = [
+      "resampler/sinc_resampler_mmi.cc",
+    ]
   }
 }

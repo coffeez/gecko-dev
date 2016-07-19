@@ -119,6 +119,8 @@ TEST(SincResamplerTest, DISABLED_SetRatioBench) {
 #define CONVOLVE_FUNC Convolve_SSE
 #elif defined(WEBRTC_ARCH_ARM_V7)
 #define CONVOLVE_FUNC Convolve_NEON
+#elif defined(WEBRTC_ARCH_MIPS) && defined(WEBRTC_LOONGSON_ASM)
+#define CONVOLVE_FUNC Convolve_MMI
 #endif
 
 // Ensure various optimized Convolve() methods return the same value.  Only run
