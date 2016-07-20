@@ -19,7 +19,7 @@ void WebRtcSpl_FilterARFastQ12(const int16_t* data_in,
   int r0, r1, r2, r3;
   int coef0, offset;
   int i, j, k;
-  int coefptr, outptr, tmpout, inptr;
+  mips_reg coefptr, outptr, tmpout, inptr;
 #if !defined(MIPS_DSP_R1_LE)
   int max16 = 0x7FFF;
   int min16 = 0xFFFF8000;
@@ -36,33 +36,33 @@ void WebRtcSpl_FilterARFastQ12(const int16_t* data_in,
     "addiu      %[j],       %[coefficients_length],  -1          \n\t"
     "andi       %[k],       %[j],                    1           \n\t"
     "sll        %[offset],  %[j],                    1           \n\t"
-    "subu       %[outptr],  %[data_out],             %[offset]   \n\t"
-    "addiu      %[inptr],   %[data_in],              0           \n\t"
+    PTR_SUBU   "%[outptr],  %[data_out],             %[offset]   \n\t"
+    PTR_ADDIU  "%[inptr],   %[data_in],              0           \n\t"
     "bgtz       %[k],       3f                                   \n\t"
-    " addu      %[coefptr], %[coefficients],         %[offset]   \n\t"
+    PTR_ADDU   "%[coefptr], %[coefficients],         %[offset]   \n\t"
    "1:                                                           \n\t"
     "lh         %[r0],      0(%[inptr])                          \n\t"
     "addiu      %[i],       %[i],                    -1          \n\t"
-    "addiu      %[tmpout],  %[outptr],               0           \n\t"
+    PTR_ADDIU  "%[tmpout],  %[outptr],               0           \n\t"
     "mult       %[r0],      %[coef0]                             \n\t"
    "2:                                                           \n\t"
     "lh         %[r0],      0(%[tmpout])                         \n\t"
     "lh         %[r1],      0(%[coefptr])                        \n\t"
     "lh         %[r2],      2(%[tmpout])                         \n\t"
     "lh         %[r3],      -2(%[coefptr])                       \n\t"
-    "addiu      %[tmpout],  %[tmpout],               4           \n\t"
+    PTR_ADDIU  "%[tmpout],  %[tmpout],               4           \n\t"
     "msub       %[r0],      %[r1]                                \n\t"
     "msub       %[r2],      %[r3]                                \n\t"
     "addiu      %[j],       %[j],                    -2          \n\t"
     "bgtz       %[j],       2b                                   \n\t"
-    " addiu     %[coefptr], %[coefptr],              -4          \n\t"
+    PTR_ADDIU  "%[coefptr], %[coefptr],              -4          \n\t"
 #if defined(MIPS_DSP_R1_LE)
     "extr_r.w   %[r0],      $ac0,                    12          \n\t"
 #else  // #if defined(MIPS_DSP_R1_LE)
     "mflo       %[r0]                                            \n\t"
 #endif  // #if defined(MIPS_DSP_R1_LE)
-    "addu       %[coefptr], %[coefficients],         %[offset]   \n\t"
-    "addiu      %[inptr],   %[inptr],                2           \n\t"
+    PTR_ADDU   "%[coefptr], %[coefficients],         %[offset]   \n\t"
+    PTR_ADDIU  "%[inptr],   %[inptr],                2           \n\t"
     "addiu      %[j],       %[coefficients_length],  -1          \n\t"
 #if defined(MIPS_DSP_R1_LE)
     "shll_s.w   %[r0],      %[r0],                   16          \n\t"
@@ -77,25 +77,25 @@ void WebRtcSpl_FilterARFastQ12(const int16_t* data_in,
 #endif  // #if defined(MIPS_DSP_R1_LE)
     "sh         %[r0],      0(%[tmpout])                         \n\t"
     "bgtz       %[i],       1b                                   \n\t"
-    " addiu     %[outptr],  %[outptr],               2           \n\t"
+    PTR_ADDIU  "%[outptr],  %[outptr],               2           \n\t"
     "b          5f                                               \n\t"
     " nop                                                        \n\t"
    "3:                                                           \n\t"
     "lh         %[r0],      0(%[inptr])                          \n\t"
     "addiu      %[i],       %[i],                    -1          \n\t"
-    "addiu      %[tmpout],  %[outptr],               0           \n\t"
+    PTR_ADDIU  "%[tmpout],  %[outptr],               0           \n\t"
     "mult       %[r0],      %[coef0]                             \n\t"
    "4:                                                           \n\t"
     "lh         %[r0],      0(%[tmpout])                         \n\t"
     "lh         %[r1],      0(%[coefptr])                        \n\t"
     "lh         %[r2],      2(%[tmpout])                         \n\t"
     "lh         %[r3],      -2(%[coefptr])                       \n\t"
-    "addiu      %[tmpout],  %[tmpout],               4           \n\t"
+    PTR_ADDIU  "%[tmpout],  %[tmpout],               4           \n\t"
     "msub       %[r0],      %[r1]                                \n\t"
     "msub       %[r2],      %[r3]                                \n\t"
     "addiu      %[j],       %[j],                    -2          \n\t"
     "bgtz       %[j],       4b                                   \n\t"
-    " addiu     %[coefptr], %[coefptr],              -4          \n\t"
+    PTR_ADDIU  "%[coefptr], %[coefptr],              -4          \n\t"
     "lh         %[r0],      0(%[tmpout])                         \n\t"
     "lh         %[r1],      0(%[coefptr])                        \n\t"
     "msub       %[r0],      %[r1]                                \n\t"
@@ -104,8 +104,8 @@ void WebRtcSpl_FilterARFastQ12(const int16_t* data_in,
 #else  // #if defined(MIPS_DSP_R1_LE)
     "mflo       %[r0]                                            \n\t"
 #endif  // #if defined(MIPS_DSP_R1_LE)
-    "addu       %[coefptr], %[coefficients],         %[offset]   \n\t"
-    "addiu      %[inptr],   %[inptr],                2           \n\t"
+    PTR_ADDU   "%[coefptr], %[coefficients],         %[offset]   \n\t"
+    PTR_ADDIU  "%[inptr],   %[inptr],                2           \n\t"
     "addiu      %[j],       %[coefficients_length],  -1          \n\t"
 #if defined(MIPS_DSP_R1_LE)
     "shll_s.w   %[r0],      %[r0],                   16          \n\t"
@@ -120,7 +120,7 @@ void WebRtcSpl_FilterARFastQ12(const int16_t* data_in,
 #endif  // #if defined(MIPS_DSP_R1_LE)
     "sh         %[r0],      2(%[tmpout])                         \n\t"
     "bgtz       %[i],       3b                                   \n\t"
-    " addiu     %[outptr],  %[outptr],               2           \n\t"
+    PTR_ADDIU  "%[outptr],  %[outptr],               2           \n\t"
    "5:                                                           \n\t"
     ".set       pop                                              \n\t"
     : [i] "=&r" (i), [j] "=&r" (j), [k] "=&r" (k), [r0] "=&r" (r0),

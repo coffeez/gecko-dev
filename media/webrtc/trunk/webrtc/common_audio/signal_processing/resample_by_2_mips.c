@@ -15,7 +15,7 @@
  *
  */
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 
 #include "webrtc/common_audio/signal_processing/include/signal_processing_library.h"
 
@@ -67,7 +67,7 @@ void WebRtcSpl_DownsampleBy2(const int16_t* in,
       "sll        %[in321],    %[in321],      10          \n\t"
       "sll        %[in322],    %[in322],      10          \n\t"
 
-      "addiu      %[inw],      %[inw],        4           \n\t"
+      PTR_ADDIU  "%[inw],      %[inw],        4           \n\t"
 
       "subu       %[diff1],    %[in321],      %[state1]   \n\t"
       "subu       %[diff2],    %[in322],      %[state5]   \n\t"
@@ -287,4 +287,4 @@ void WebRtcSpl_DownsampleBy2(const int16_t* in,
   );
 }
 
-#endif  // #if defined(MIPS32_LE)
+#endif  // #if defined(MIPS32_LE) || defined(MIPS64_LE)

@@ -158,11 +158,7 @@
         ['target_arch=="arm64"', {
           'dependencies': ['common_audio_neon',],
         }],
-        ['(target_arch=="mipsel" or target_arch=="mips64el") and mips_arch_variant=="loongson"', {
-          'dependencies': ['common_audio_mmi',],
-          'cflags': ['-march=loongson3a',],
-        }],
-        ['target_arch=="mipsel" and mips_arch_variant!="loongson" and mips_arch_variant!="r6" and android_webview_build==0', {
+        ['(target_arch=="mipsel" or target_arch=="mips64el") and mips_arch_variant!="r6" and android_webview_build==0', {
           'sources': [
             'signal_processing/include/spl_inl_mips.h',
             'signal_processing/complex_bit_reverse_mips.c',
@@ -179,8 +175,13 @@
             'signal_processing/complex_fft.c',
             'signal_processing/filter_ar_fast_q12.c',
             'signal_processing/spl_sqrt_floor.c',
+            'signal_processing/resample_by_2.c',
           ],
           'conditions': [
+            ['mips_arch_variant=="loongson"', {
+              'dependencies': ['common_audio_mmi',],
+              'cflags': ['-march=loongson3a',],
+            }],
             ['mips_dsp_rev>0', {
               'sources': [
                 'signal_processing/vector_scaling_operations_mips.c',
