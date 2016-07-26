@@ -696,7 +696,8 @@ static void Color32_LS3(SkPMColor dst[], const SkPMColor src[], int count,
                 "mtc1 %[tmp], $f1 \n\t"
                 "pshufh %[rb_mask], $f1, $f0 \n\t"
                 // src_scale_wide
-                "pshufh %[src_scale_wide], %[scale], $f0 \n\t"
+                "mtc1 %[scale], $f1 \n\t"
+                "pshufh %[src_scale_wide], $f1, $f0 \n\t"
                 // color_wide
                 "mtc1 %[color], %[color_wide] \n\t"
                 "punpcklwd %[color_wide], %[color_wide], %[color_wide] \n\t"
@@ -706,7 +707,7 @@ static void Color32_LS3(SkPMColor dst[], const SkPMColor src[], int count,
                 ".set pop \n\t"
                 :[rb_mask]"=f"(rb_mask), [src_scale_wide]"=f"(src_scale_wide),
                  [color_wide]"=f"(color_wide), [srl]"=f"(srl), [tmp]"=&r"(tmp)
-                :[scale]"f"(scale), [color]"r"(color)
+                :[scale]"r"(scale), [color]"r"(color)
                 :"$f0", "$f1"
             );
             while (count >= 4) {
