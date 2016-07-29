@@ -131,7 +131,7 @@ static void S32_D565_Opaque_LS3(uint16_t* SK_RESTRICT dst,
                 _mm_packsswh(b, t1, t2, t)
                 :[t1h]"=&f"(t1h), [t1l]"=&f"(t1l),
                  [t2h]"=&f"(t2h), [t2l]"=&f"(t2l),
-                 [gh]"=f"(gh), [gl]"=f"(gl),
+                 [gh]"=&f"(gh), [gl]"=&f"(gl),
                  [bh]"=f"(bh), [bl]"=f"(bl), [t]"=&f"(t)
                 :[sp1h]"f"(sp1h), [sp1l]"f"(sp1l),
                  [sp2h]"f"(sp2h), [sp2l]"f"(sp2l),
