@@ -122,8 +122,8 @@ void convolveVertically_LS3(const SkConvolutionFilter1D::ConvolutionFixed* filte
                 _mm_paddw(accum3, accum3, t)
                 ".set pop \n\t"
                 :[th]"=&f"(th), [tl]"=&f"(tl),
-                 [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),
-                 [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol),
+                 [mul_hih]"+f"(mul_hih), [mul_hil]"+f"(mul_hil),
+                 [mul_loh]"+f"(mul_loh), [mul_lol]"+f"(mul_lol),
                  [accum2h]"+f"(accum2h), [accum2l]"+f"(accum2l),
                  [accum3h]"+f"(accum3h), [accum3l]"+f"(accum3l)
             );
