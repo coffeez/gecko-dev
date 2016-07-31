@@ -49,9 +49,9 @@ SkARGB32_A8_BlitMask_LS3(void* device, size_t dstRB, const void* maskPtr,
         "mov.d %[c1h], %[c1l] \n\t"
         ".set pop \n\t"
         :[zero]"=f"(zero), [i8]"=f"(i8), [if5]"=f"(if5),
-         [rbmh]"=f"(rb_mask.h), [rbml]"=f"(rb_mask.l),
-         [c256h]"=f"(c_256.h), [c256l]"=f"(c_256.l),
-         [c1h]"=f"(c_1.h), [c1l]"=f"(c_1.l),
+         [rbmh]"=&f"(rb_mask.h), [rbml]"=&f"(rb_mask.l),
+         [c256h]"=&f"(c_256.h), [c256l]"=&f"(c_256.l),
+         [c1h]"=&f"(c_1.h), [c1l]"=&f"(c_1.l),
          [tmp]"=&r"(tmp)
     );
     do {
@@ -95,6 +95,19 @@ SkARGB32_A8_BlitMask_LS3(void* device, size_t dstRB, const void* maskPtr,
                     _mm_paddh(ssw, ssw, c1)
                     // Get red and blue pixels into lower byte of each word.
                     _mm_and(drb, rbm, dp)
+                    ".set pop \n\t"
+                    :[dph]"=&f"(dst_pixel.h), [dpl]"=&f"(dst_pixel.l),
+                     [sswh]"=&f"(src_scale_wide.h), [sswl]"=&f"(src_scale_wide.l),
+                     [drbh]"=f"(dst_rb.h), [drbl]"=f"(dst_rb.l),
+                     [m]"=&r"(m)
+                    :[d]"r"(d), [mask]"r"(mask), [zero]"f"(zero),
+                     [rbmh]"f"(rb_mask.h), [rbml]"f"(rb_mask.l),
+                     [c1h]"f"(c_1.h), [c1l]"f"(c_1.l)
+                );
+
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
                     _mm_and(srb, rbm, sp)
                     // Get alpha and green into lower byte of each word.
                     _mm_psrlh(dag, dp, i8)
@@ -104,6 +117,20 @@ SkARGB32_A8_BlitMask_LS3(void* device, size_t dstRB, const void* maskPtr,
                     "mov.d %[dall], %[sagl] \n\t"
                     // "mov.d %[dalh], %[dalh] \n\t"
                     "pshufh %[dall], %[dall], %[if5] \n\t"
+                    ".set pop \n\t"
+                    :[srbh]"=&f"(src_rb.h), [srbl]"=&f"(src_rb.l),
+                     [dagh]"=&f"(dst_ag.h), [dagl]"=&f"(dst_ag.l),
+                     [sagh]"=&f"(src_ag.h), [sagl]"=&f"(src_ag.l),
+                     [dalh]"=&f"(dst_alpha.h), [dall]"=&f"(dst_alpha.l)
+                    :[dph]"f"(dst_pixel.h), [dpl]"f"(dst_pixel.l),
+                     [rbmh]"f"(rb_mask.h), [rbml]"f"(rb_mask.l),
+                     [sph]"f"(src_pixel.h), [spl]"f"(src_pixel.l),
+                     [i8]"f"(i8), [if5]"f"(if5)
+                );
+
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
                     // dst_alpha = dst_alpha * src_scale
                     _mm_pmullh(dal, dal, ssw)
                     // Divide by 256.
@@ -118,6 +145,19 @@ SkARGB32_A8_BlitMask_LS3(void* device, size_t dstRB, const void* maskPtr,
                     _mm_pmullh(srb, srb, ssw)
                     // Multiply alpha and green by global alpha.
                     _mm_pmullh(sag, sag, ssw)
+                    :[drbh]"+f"(dst_rb.h), [drbl]"+f"(dst_rb.l),
+                     [srbh]"+f"(src_rb.h), [srbl]"+f"(src_rb.l),
+                     [dagh]"+f"(dst_ag.h), [dagl]"+f"(dst_ag.l),
+                     [sagh]"+f"(src_ag.h), [sagl]"+f"(src_ag.l),
+                     [dalh]"+f"(dst_alpha.h), [dall]"+f"(dst_alpha.l)
+                    :[sswh]"f"(src_scale_wide.h), [sswl]"f"(src_scale_wide.l),
+                     [c256h]"f"(c_256.h), [c256l]"f"(c_256.l),
+                     [i8]"f"(i8)
+                );
+
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
                     // Divide by 256.
                     _mm_psrlh(drb, drb, i8)
                     _mm_psrlh(srb, srb, i8)
@@ -129,22 +169,23 @@ SkARGB32_A8_BlitMask_LS3(void* device, size_t dstRB, const void* maskPtr,
                     _mm_or(drb, srb, sag)
                     // Add two pixels into result (overwrite drb).
                     _mm_paddb(drb, drb, dp)
-                    "gssqc1 %[drbh], %[drbl], (%[d]) \n\t"
                     ".set pop \n\t"
                     :[dph]"=&f"(dst_pixel.h), [dpl]"=&f"(dst_pixel.l),
-                     [sswh]"=&f"(src_scale_wide.h), [sswl]"=&f"(src_scale_wide.l),
-                     [drbh]"=&f"(dst_rb.h), [drbl]"=&f"(dst_rb.l),
-                     [srbh]"=&f"(src_rb.h), [srbl]"=&f"(src_rb.l),
-                     [dagh]"=&f"(dst_ag.h), [dagl]"=&f"(dst_ag.l),
-                     [sagh]"=&f"(src_ag.h), [sagl]"=&f"(src_ag.l),
-                     [dalh]"=&f"(dst_alpha.h), [dall]"=&f"(dst_alpha.l),
-                     [m]"=&r"(m)
-                    :[d]"r"(d), [mask]"r"(mask), [zero]"f"(zero),
-                     [rbmh]"f"(rb_mask.h), [rbml]"f"(rb_mask.l),
-                     [sph]"f"(src_pixel.h), [spl]"f"(src_pixel.l),
-                     [c256h]"f"(c_256.h), [c256l]"f"(c_256.l),
-                     [c1h]"f"(c_1.h), [c1l]"f"(c_1.l),
-                     [i8]"f"(i8), [if5]"f"(if5)
+                     [drbh]"+f"(dst_rb.h), [drbl]"+f"(dst_rb.l),
+                     [srbh]"+f"(src_rb.h), [srbl]"+f"(src_rb.l),
+                     [dagh]"+f"(dst_ag.h), [dagl]"+f"(dst_ag.l),
+                     [sagh]"+f"(src_ag.h), [sagl]"+f"(src_ag.l)
+                    :[rbmh]"f"(rb_mask.h), [rbml]"f"(rb_mask.l),
+                     [i8]"f"(i8)
+                );
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
+                    "gssqc1 %[drbh], %[drbl], (%[d]) \n\t"
+                    ".set pop \n\t"
+                    ::[drbh]"f"(dst_rb.h), [drbl]"f"(dst_rb.l),
+                      [d]"r"(d)
+                    : "memory"
                 );
 
                 // load the next 4 pixel
