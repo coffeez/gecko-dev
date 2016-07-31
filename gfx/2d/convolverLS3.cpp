@@ -117,6 +117,21 @@ void ConvolveHorizontally_LS3(const unsigned char* src_data,
         _mm_punpcklbh(src16, src8, zero)
         _mm_pmulhh(mul_hi, src16, coeff16)
         _mm_pmullh(mul_lo, src16, coeff16)
+        ".set pop \n\t"
+        :[src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
+         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),
+         [coeffh]"=&f"(coeffh), [coeffl]"=&f"(coeffl),
+         [coeff16h]"=&f"(coeff16h), [coeff16l]"=&f"(coeff16l),
+         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),
+         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol)
+        :[zeroh]"f"(zero), [zerol]"f"(zero),
+         [shuf_50]"f"(shuf_50),
+         [fval]"r"(filter_values), [rtf]"r"(row_to_filter)
+      );
+
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
         // [32]  a0*c0 b0*c0 g0*c0 r0*c0
         _mm_punpcklhw(t, mul_lo, mul_hi)
         _mm_paddw(accum, accum, t)
@@ -130,6 +145,19 @@ void ConvolveHorizontally_LS3(const unsigned char* src_data,
         _mm_pshuflh(coeff16, coeff, shuf_fa)
         // [16] c3 c3 c3 c3 c2 c2 c2 c2
         _mm_punpcklhw(coeff16, coeff16, coeff16)
+        ".set pop \n\t"
+        :[accumh]"+f"(accumh), [accuml]"+f"(accuml),
+         [coeffh]"+f"(coeffh), [coeffl]"+f"(coeffl),
+         [coeff16h]"+f"(coeff16h), [coeff16l]"+f"(coeff16l),
+         [mul_hih]"+f"(mul_hih), [mul_hil]"+f"(mul_hil),
+         [mul_loh]"+f"(mul_loh), [mul_lol]"+f"(mul_lol),
+         [th]"=&f"(th), [tl]"=&f"(tl)
+        :[shuf_fa]"f"(shuf_fa)
+      );
+
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
         // [16] a3 g3 b3 r3 a2 g2 b2 r2
         _mm_punpckhbh(src16, src8, zero)
         _mm_pmulhh(mul_hi, src16, coeff16)
@@ -141,17 +169,14 @@ void ConvolveHorizontally_LS3(const unsigned char* src_data,
         _mm_punpckhhw(t, mul_lo, mul_hi)
         _mm_paddw(accum, accum, t)
         ".set pop \n\t"
-        :[th]"=&f"(th), [tl]"=&f"(tl),
-         [src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
+        :[th]"+f"(th), [tl]"+f"(tl),
          [accumh]"+f"(accumh), [accuml]"+f"(accuml),
-         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),
-         [coeffh]"=&f"(coeffh), [coeffl]"=&f"(coeffl),
-         [coeff16h]"=&f"(coeff16h), [coeff16l]"=&f"(coeff16l),
-         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),
-         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol)
-        :[zeroh]"f"(zero), [zerol]"f"(zero),
-         [shuf_50]"f"(shuf_50), [shuf_fa]"f"(shuf_fa),
-         [fval]"r"(filter_values), [rtf]"r"(row_to_filter)
+         [src16h]"+f"(src16h), [src16l]"+f"(src16l),
+         [coeff16h]"+f"(coeff16h), [coeff16l]"+f"(coeff16l),
+         [mul_hih]"+f"(mul_hih), [mul_hil]"+f"(mul_hil),
+         [mul_loh]"+f"(mul_loh), [mul_lol]"+f"(mul_lol)
+        :[src8h]"f"(src8h), [src8l]"f"(src8l),
+         [zeroh]"f"(zero), [zerol]"f"(zero)
       );
 
       // Advance the pixel and coefficients pointers.
@@ -185,21 +210,8 @@ void ConvolveHorizontally_LS3(const unsigned char* src_data,
         _mm_punpcklbh(src16, src8, zero)
         _mm_pmulhh(mul_hi, src16, coeff16)
         _mm_pmullh(mul_lo, src16, coeff16)
-        _mm_punpcklhw(t, mul_lo, mul_hi)
-        _mm_paddw(accum, accum, t)
-        _mm_punpckhhw(t, mul_lo, mul_hi)
-        _mm_paddw(accum, accum, t)
-        _mm_punpckhbh(src16, src8, zero)
-        _mm_pshuflh(coeff16, coeff, shuf_fa)
-        _mm_punpcklhw(coeff16, coeff16, coeff16)
-        _mm_pmulhh(mul_hi, src16, coeff16)
-        _mm_pmullh(mul_lo, src16, coeff16)
-        _mm_punpcklhw(t, mul_lo, mul_hi)
-        _mm_paddw(accum, accum, t)
         ".set pop \n\t"
-        :[th]"=&f"(th), [tl]"=&f"(tl),
-         [src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
-         [accumh]"+f"(accumh), [accuml]"+f"(accuml),
+        :[src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
          [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),
          [coeffh]"=&f"(coeffh), [coeffl]"=&f"(coeffl),
          [coeff16h]"=&f"(coeff16h), [coeff16l]"=&f"(coeff16l),
@@ -207,7 +219,45 @@ void ConvolveHorizontally_LS3(const unsigned char* src_data,
          [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol)
         :[fval]"r"(filter_values), [rtf]"r"(row_to_filter),
          [zeroh]"f"(zero), [zerol]"f"(zero), [mask]"f"(mask[r]),
-         [shuf_50]"f"(shuf_50), [shuf_fa]"f"(shuf_fa)
+         [shuf_50]"f"(shuf_50)
+      );
+
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        _mm_punpcklhw(t, mul_lo, mul_hi)
+        _mm_paddw(accum, accum, t)
+        _mm_punpckhhw(t, mul_lo, mul_hi)
+        _mm_paddw(accum, accum, t)
+        _mm_punpckhbh(src16, src8, zero)
+        ".set pop \n\t"
+        :[src16h]"+f"(src16h), [src16l]"+f"(src16l),
+         [accumh]"+f"(accumh), [accuml]"+f"(accuml),
+         [th]"=&f"(th), [tl]"=&f"(tl)
+        :[zeroh]"f"(zero), [zerol]"f"(zero),
+         [src8h]"f"(src8h), [src8l]"f"(src8l),
+         [mul_hih]"f"(mul_hih), [mul_hil]"f"(mul_hil),
+         [mul_loh]"f"(mul_loh), [mul_lol]"f"(mul_lol)
+      );
+
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        _mm_pshuflh(coeff16, coeff, shuf_fa)
+        _mm_punpcklhw(coeff16, coeff16, coeff16)
+        _mm_pmulhh(mul_hi, src16, coeff16)
+        _mm_pmullh(mul_lo, src16, coeff16)
+        _mm_punpcklhw(t, mul_lo, mul_hi)
+        _mm_paddw(accum, accum, t)
+        ".set pop \n\t"
+        :[th]"+f"(th), [tl]"+f"(tl),
+         [accumh]"+f"(accumh), [accuml]"+f"(accuml),
+         [coeff16h]"+f"(coeff16h), [coeff16l]"+f"(coeff16l),
+         [mul_hih]"+f"(mul_hih), [mul_hil]"+f"(mul_hil),
+         [mul_loh]"+f"(mul_loh), [mul_lol]"+f"(mul_lol)
+        :[coeffh]"f"(coeffh), [coeffl]"f"(coeffl),
+         [src16h]"f"(src16h), [src16l]"f"(src16l),
+         [shuf_fa]"f"(shuf_fa)
       );
     }
 
@@ -252,7 +302,7 @@ void ConvolveHorizontally1_LS3(const unsigned char* src_data,
     "xor %[zero], %[zero], %[zero] \n"
     "mtc1 %[sk_sra], %[sra] \n"
     ".set pop \n"
-    :[zero]"=&f"(zero), [sra]"=&f"(sra)
+    :[zero]"=f"(zero), [sra]"=f"(sra)
     :[sk_sra]"r"(ConvolutionFilter1D::kShiftBits)
   );
   // Loop over each pixel on this row in the output image.
@@ -418,6 +468,18 @@ void ConvolveHorizontally4_LS3(const unsigned char* src_data[4],
         _mm_punpcklbh(src16, src8, zero)                               \
         _mm_pmulhh(mul_hi, src16, coeff16lo)                           \
         _mm_pmullh(mul_lo, src16, coeff16lo)                           \
+        ".set pop \n\t"                                                \
+        :[src8h]"=&f"(src8h), [src8l]"=&f"(src8l),                     \
+         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),                 \
+         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),             \
+         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol)              \
+        :[zeroh]"f"(zero), [zerol]"f"(zero), [src]"r"(_src),           \
+         [coeff16loh]"f"(coeff16loh), [coeff16lol]"f"(coeff16lol)      \
+      );                                                               \
+                                                                       \
+      asm volatile (                                                   \
+        ".set push \n\t"                                               \
+        ".set arch=loongson3a \n\t"                                    \
         _mm_punpcklhw(t, mul_lo, mul_hi)                               \
         _mm_paddw(accum, accum, t)                                     \
         _mm_punpckhhw(t, mul_lo, mul_hi)                               \
@@ -431,13 +493,12 @@ void ConvolveHorizontally4_LS3(const unsigned char* src_data[4],
         _mm_paddw(accum, accum, t)                                     \
         ".set pop \n\t"                                                \
         :[th]"=&f"(th), [tl]"=&f"(tl),                                 \
-         [src8h]"=&f"(src8h), [src8l]"=&f"(src8l),                     \
-         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),                 \
-         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),             \
-         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol),             \
+         [src16h]"+f"(src16h), [src16l]"+f"(src16l),                   \
+         [mul_hih]"+f"(mul_hih), [mul_hil]"+f"(mul_hil),               \
+         [mul_loh]"+f"(mul_loh), [mul_lol]"+f"(mul_lol),               \
          [accumh]"+f"(_accumh), [accuml]"+f"(_accuml)                  \
         :[zeroh]"f"(zero), [zerol]"f"(zero), [src]"r"(_src),           \
-         [coeff16loh]"f"(coeff16loh), [coeff16lol]"f"(coeff16lol),     \
+         [src8h]"f"(src8h), [src8l]"f"(src8l),                         \
          [coeff16hih]"f"(coeff16hih), [coeff16hil]"f"(coeff16hil)      \
       );
 
@@ -501,10 +562,6 @@ void ConvolveHorizontally4_LS3(const unsigned char* src_data[4],
       _mm_psraw(accum3, accum3, sra)
       _mm_packsswh(accum3, accum3, zero, t)
       _mm_packushb(accum3, accum3, zero, t)
-      "swc1 %[accum0l], (%[out_row0]) \n\t"
-      "swc1 %[accum1l], (%[out_row1]) \n\t"
-      "swc1 %[accum2l], (%[out_row2]) \n\t"
-      "swc1 %[accum3l], (%[out_row3]) \n\t"
       ".set pop \n\t"
       :[accum0h]"+f"(accum0h), [accum0l]"+f"(accum0l),
        [accum1h]"+f"(accum1h), [accum1l]"+f"(accum1l),
@@ -512,10 +569,21 @@ void ConvolveHorizontally4_LS3(const unsigned char* src_data[4],
        [accum3h]"+f"(accum3h), [accum3l]"+f"(accum3l),
        [sra]"=&f"(sra), [t]"=&f"(t), [tmp]"=&r"(tmp)
       :[zeroh]"f"(zero), [zerol]"f"(zero),
-       [out_row0]"r"(out_row[0]), [out_row1]"r"(out_row[1]),
-       [out_row2]"r"(out_row[2]), [out_row3]"r"(out_row[3]),
        [sk_sra]"i"(ConvolutionFilter1D::kShiftBits)
-      :"memory"
+    );
+    asm volatile (
+      ".set push \n\t"
+      ".set arch=loongson3a \n\t"
+      "swc1 %[accum0l], (%[out_row0]) \n\t"
+      "swc1 %[accum1l], (%[out_row1]) \n\t"
+      "swc1 %[accum2l], (%[out_row2]) \n\t"
+      "swc1 %[accum3l], (%[out_row3]) \n\t"
+      ".set pop \n\t"
+      ::[accum0l]"f"(accum0l), [accum1l]"f"(accum2l),
+        [accum2l]"f"(accum2l), [accum3l]"f"(accum3l),
+        [out_row0]"r"(out_row[0]), [out_row1]"r"(out_row[1]),
+        [out_row2]"r"(out_row[2]), [out_row3]"r"(out_row[3])
+      : "memory"
     );
 
     out_row[0] += 4;
@@ -602,6 +670,20 @@ void ConvolveVertically_LS3_impl(const ConvolutionFilter1D::Fixed* filter_values
         _mm_punpcklbh(src16, src8, zero)
         _mm_pmulhh(mul_hi, src16, coeff16)
         _mm_pmullh(mul_lo, src16, coeff16)
+        ".set pop \n\t"
+        :[src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
+         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),
+         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),
+         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol),
+         [coeff16h]"=&f"(coeff16h), [coeff16l]"=&f"(coeff16l)
+        :[zeroh]"f"(zero), [zerol]"f"(zero),
+         [fval]"m"(filter_values[filter_y]),
+         [src]"r"(src)
+      );
+
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
         // [32] a0 b0 g0 r0
         _mm_punpcklhw(t, mul_lo, mul_hi)
         _mm_paddw(accum0, accum0, t)
@@ -612,25 +694,22 @@ void ConvolveVertically_LS3_impl(const ConvolutionFilter1D::Fixed* filter_values
         // multiply with current coefficient => accumulate the result.
         // [16] a3 b3 g3 r3 a2 b2 g2 r2
         _mm_punpckhbh(src16, src8, zero)
-        _mm_pmulhh(mul_hi, src16, coeff16)
-        _mm_pmullh(mul_lo, src16, coeff16)
         ".set pop \n\t"
         :[th]"=&f"(th), [tl]"=&f"(tl),
-         [src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
-         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),
-         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),
-         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol),
+         [src16h]"+f"(src16h), [src16l]"+f"(src16l),
          [accum0h]"+f"(accum0h), [accum0l]"+f"(accum0l),
-         [accum1h]"+f"(accum1h), [accum1l]"+f"(accum1l),
-         [coeff16h]"=&f"(coeff16h), [coeff16l]"=&f"(coeff16l)
-        :[zeroh]"f"(zero), [zerol]"f"(zero),
-         [fval]"m"(filter_values[filter_y]),
-         [src]"r"(src)
+         [accum1h]"+f"(accum1h), [accum1l]"+f"(accum1l)
+        :[mul_hih]"f"(mul_hih), [mul_hil]"f"(mul_hil),
+         [mul_loh]"f"(mul_loh), [mul_lol]"f"(mul_lol),
+         [src8h]"f"(src8h), [src8l]"f"(src8l),
+         [zeroh]"f"(zero), [zerol]"f"(zero)
       );
 
       asm volatile (
         ".set push \n\t"
         ".set arch=loongson3a \n\t"
+        _mm_pmulhh(mul_hi, src16, coeff16)
+        _mm_pmullh(mul_lo, src16, coeff16)
         // [32] a2 b2 g2 r2
         _mm_punpcklhw(t, mul_lo, mul_hi)
         _mm_paddw(accum2, accum2, t)
@@ -638,11 +717,13 @@ void ConvolveVertically_LS3_impl(const ConvolutionFilter1D::Fixed* filter_values
         _mm_punpckhhw(t, mul_lo, mul_hi)
         _mm_paddw(accum3, accum3, t)
         ".set pop \n\t"
-        :[th]"=&f"(th), [tl]"=&f"(tl),
+        :[th]"+f"(th), [tl]"+f"(tl),
          [mul_hih]"+f"(mul_hih), [mul_hil]"+f"(mul_hil),
          [mul_loh]"+f"(mul_loh), [mul_lol]"+f"(mul_lol),
          [accum2h]"+f"(accum2h), [accum2l]"+f"(accum2l),
          [accum3h]"+f"(accum3h), [accum3l]"+f"(accum3l)
+        :[src16h]"f"(src16h), [src16l]"f"(src16l),
+         [coeff16h]"f"(coeff16h), [coeff16l]"f"(coeff16l)
       );
     }
 
@@ -775,12 +856,37 @@ void ConvolveVertically_LS3_impl(const ConvolutionFilter1D::Fixed* filter_values
         _mm_punpcklbh(src16, src8, zero)
         _mm_pmulhh(mul_hi, src16, coeff16)
         _mm_pmullh(mul_lo, src16, coeff16)
+        ".set pop \n\t"
+        :[src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
+         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),
+         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),
+         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol),
+         [coeff16h]"=&f"(coeff16h), [coeff16l]"=&f"(coeff16l)
+        :[zeroh]"f"(zero), [zerol]"f"(zero),
+         [fval]"m"(filter_values[filter_y]),
+         [src]"r"(src)
+      );
+
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
         // [32] a0 b0 g0 r0
         _mm_punpcklhw(t, mul_lo, mul_hi)
         _mm_paddw(accum0, accum0, t)
         // [32] a1 b1 g1 r1
         _mm_punpckhhw(t, mul_lo, mul_hi)
         _mm_paddw(accum1, accum1, t)
+        ".set pop \n\t"
+        :[th]"=&f"(th), [tl]"=&f"(tl),
+         [accum0h]"+f"(accum0h), [accum0l]"+f"(accum0l),
+         [accum1h]"+f"(accum1h), [accum1l]"+f"(accum1l)
+        :[mul_hih]"f"(mul_hih), [mul_hil]"f"(mul_hil),
+         [mul_loh]"f"(mul_loh), [mul_lol]"f"(mul_lol)
+      );
+
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
         // [16] a3 b3 g3 r3 a2 b2 g2 r2
         _mm_punpckhbh(src16, src8, zero)
         _mm_pmulhh(mul_hi, src16, coeff16)
@@ -789,18 +895,14 @@ void ConvolveVertically_LS3_impl(const ConvolutionFilter1D::Fixed* filter_values
         _mm_punpcklhw(t, mul_lo, mul_hi)
         _mm_paddw(accum2, accum2, t)
         ".set pop \n\t"
-        :[th]"=&f"(th), [tl]"=&f"(tl),
-         [src8h]"=&f"(src8h), [src8l]"=&f"(src8l),
-         [src16h]"=&f"(src16h), [src16l]"=&f"(src16l),
-         [mul_hih]"=&f"(mul_hih), [mul_hil]"=&f"(mul_hil),
-         [mul_loh]"=&f"(mul_loh), [mul_lol]"=&f"(mul_lol),
-         [accum0h]"+f"(accum0h), [accum0l]"+f"(accum0l),
-         [accum1h]"+f"(accum1h), [accum1l]"+f"(accum1l),
-         [accum2h]"+f"(accum2h), [accum2l]"+f"(accum2l),
-         [coeff16h]"=&f"(coeff16h), [coeff16l]"=&f"(coeff16l)
-        :[zeroh]"f"(zero), [zerol]"f"(zero),
-         [fval]"m"(filter_values[filter_y]),
-         [src]"r"(src)
+        :[th]"+f"(th), [tl]"+f"(tl),
+         [src16h]"+f"(src16h), [src16l]"+f"(src16l),
+         [mul_hih]"+f"(mul_hih), [mul_hil]"+f"(mul_hil),
+         [mul_loh]"+f"(mul_loh), [mul_lol]"+f"(mul_lol),
+         [accum2h]"+f"(accum2h), [accum2l]"+f"(accum2l)
+        :[src8h]"f"(src8h), [src8l]"f"(src8l),
+         [zeroh]"f"(zero), [zerol]"f"(zero),
+         [coeff16h]"f"(coeff16h), [coeff16l]"f"(coeff16l)
       );
     }
 

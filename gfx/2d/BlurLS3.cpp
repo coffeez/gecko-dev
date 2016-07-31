@@ -30,7 +30,6 @@ __m128i loadUnaligned128(__m128i *p)
     ".set pop \n\t"
     :[vh]"=f"(v.h), [vl]"=f"(v.l)
     :[p]"r"(p)
-    :"memory"
   );
 
   return v;
@@ -54,8 +53,8 @@ __m128i Divide(__m128i aValues, __m128i aDivisor)
     "mthc1 %[tmp], %[maskl] \n\t"
     "mov.d %[maskh], %[maskl] \n\t"
     ".set pop \n\t"
-    :[rah]"=f"(ra.h), [ral]"=f"(ra.l),
-     [maskh]"=f"(mask.h), [maskl]"=f"(mask.l),
+    :[rah]"=&f"(ra.h), [ral]"=&f"(ra.l),
+     [maskh]"=&f"(mask.h), [maskl]"=&f"(mask.l),
      [tmp]"=&r"(tmp)
   );
 
@@ -78,7 +77,7 @@ __m128i Divide(__m128i aValues, __m128i aDivisor)
     :[p4321h]"=&f"(p4321.h), [p4321l]"=&f"(p4321.l),
      [t1h]"=&f"(t1.h), [t1l]"=&f"(t1.l),
      [t2h]"=&f"(t2.h), [t2l]"=&f"(t2.l),
-     [srl32]"=&f"(srl32), [tmp]"=&r"(tmp)
+     [srl32]"=&f"(srl32), [tmp]"+r"(tmp)
     :[rah]"f"(ra.h), [ral]"f"(ra.l),
      [maskh]"f"(mask.h), [maskl]"f"(mask.l),
      [avh]"f"(aValues.h), [avl]"f"(aValues.l),
@@ -196,13 +195,19 @@ void GenerateIntegralImage_LS3(int32_t aLeftInflation, int32_t aRightInflation,
         "gslqc1 %[frh], %[frl], (%[fr]) \n\t"
         "gslqc1 %[prh], %[prl], (%[pr]) \n\t"
         _mm_paddw(fr, fr, pr)
-        "gssqc1 %[frh], %[frl], (%[r]) \n\t"
         ".set pop \n\t"
         :[frh]"=&f"(firstRow.h), [frl]"=&f"(firstRow.l),
          [prh]"=&f"(previousRow.h), [prl]"=&f"(previousRow.l)
-        :[fr]"r"(intFirstRow + x), [pr]"r"(intPrevRow + x),
-         [r]"r"(intRow + x)
-        :"memory"
+        :[fr]"r"(intFirstRow + x), [pr]"r"(intPrevRow + x)
+      );
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "gssqc1 %[frh], %[frl], (%[r]) \n\t"
+        ".set pop \n\t"
+        ::[frh]"f"(firstRow.h), [frl]"f"(firstRow.l),
+          [r]"r"(intRow + x)
+        : "memory"
       );
     }
   }
@@ -259,13 +264,20 @@ void GenerateIntegralImage_LS3(int32_t aLeftInflation, int32_t aRightInflation,
         "pshufh %[crl], %[sph], %[see] \n\t"
         "gslqc1 %[th], %[tl], (%[pr]) \n\t"
         _mm_paddw(t, sp, t)
-        "gssqc1 %[th], %[tl], (%[r]) \n\t"
         ".set pop \n\t"
         :[th]"=&f"(t.h), [tl]"=&f"(t.l),
          [sph]"+f"(sumPixels.h), [spl]"+f"(sumPixels.l),
          [crh]"+f"(currentRowSum.h), [crl]"+f"(currentRowSum.l)
-        :[r]"r"(intRow + x), [pr]"r"(intPrevRow + x), [see]"f"(see)
-        :"memory"
+        :[pr]"r"(intPrevRow + x), [see]"f"(see)
+      );
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "gssqc1 %[th], %[tl], (%[r]) \n\t"
+        ".set pop \n\t"
+        ::[th]"f"(t.h), [tl]"f"(t.l),
+          [r]"r"(intRow + x)
+        : "memory"
       );
     }
     for (int x = aLeftInflation; x < (aSize.width + aLeftInflation); x += 4) {
@@ -301,13 +313,20 @@ void GenerateIntegralImage_LS3(int32_t aLeftInflation, int32_t aRightInflation,
         "mov.d %[crl], %[spl] \n\t"
         "gslqc1 %[th], %[tl], (%[pr]) \n\t"
         _mm_paddw(t, sp, t)
-        "gssqc1 %[th], %[tl], (%[r]) \n\t"
         ".set pop \n\t"
         :[th]"=&f"(t.h), [tl]"=&f"(t.l),
          [sph]"+f"(sumPixels.h), [spl]"+f"(sumPixels.l),
          [crh]"+f"(currentRowSum.h), [crl]"+f"(currentRowSum.l)
-        :[r]"r"(intRow + x), [pr]"r"(intPrevRow + x)
-        :"memory"
+        :[pr]"r"(intPrevRow + x)
+      );
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "gssqc1 %[th], %[tl], (%[r]) \n\t"
+        ".set pop \n\t"
+        ::[th]"f"(t.h), [tl]"f"(t.l),
+          [r]"r"(intRow + x)
+        : "memory"
       );
     }
 
@@ -368,13 +387,20 @@ void GenerateIntegralImage_LS3(int32_t aLeftInflation, int32_t aRightInflation,
         "pshufh %[crl], %[sph], %[see] \n\t"
         "gslqc1 %[th], %[tl], (%[pr]) \n\t"
         _mm_paddw(t, sp, t)
-        "gssqc1 %[th], %[tl], (%[r]) \n\t"
         ".set pop \n\t"
         :[th]"=&f"(t.h), [tl]"=&f"(t.l),
          [sph]"+f"(sumPixels.h), [spl]"+f"(sumPixels.l),
          [crh]"+f"(currentRowSum.h), [crl]"+f"(currentRowSum.l)
-        :[r]"r"(intRow + x), [pr]"r"(intPrevRow + x), [see]"f"(see)
-        :"memory"
+        :[pr]"r"(intPrevRow + x), [see]"f"(see)
+      );
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "gssqc1 %[th], %[tl], (%[r]) \n\t"
+        ".set pop \n\t"
+        ::[th]"f"(t.h), [tl]"f"(t.l),
+          [r]"r"(intRow + x)
+        : "memory"
       );
     }
   }
@@ -400,15 +426,21 @@ void GenerateIntegralImage_LS3(int32_t aLeftInflation, int32_t aRightInflation,
           "gslqc1 %[t1h], %[t1l], (%[lr]) \n\t"
           "gslqc1 %[t2h], %[t2l], (%[pr]) \n\t"
           _mm_paddw(t1, t1, t2)
-          "gssqc1 %[t1h], %[t1l], (%[r]) \n\t"
           ".set pop \n\t"
           :[t1h]"=&f"(t1.h), [t1l]"=&f"(t1.l),
            [t2h]"=&f"(t2.h), [t2l]"=&f"(t2.l)
-          :[r]"r"(intRow + (x / 4)),
-           [lr]"r"(intLastRow + (x / 4)),
+          :[lr]"r"(intLastRow + (x / 4)),
            [pr]"r"(intPrevRow + (x / 4))
-          :"memory"
-      );
+        );
+        asm volatile (
+          ".set push \n\t"
+          ".set arch=loongson3a \n\t"
+          "gssqc1 %[t1h], %[t1l], (%[r]) \n\t"
+          ".set pop \n\t"
+          ::[t1h]"f"(t1.h), [t1l]"f"(t1.l),
+            [r]"r"(intRow + (x / 4))
+          : "memory"
+        );
       }
     }
   }
@@ -529,19 +561,25 @@ AlphaBoxBlur::BoxBlur_LS3(uint8_t* aData,
         _mm_packsswh(r3, r3, r4, t)
         _mm_packsswh(f, r1, r2, t)
         _mm_packushb(f, f, r3, t)
-        "gssdlc1 %[fh], 0xf(%[d]) \n\t"
-        "gssdrc1 %[fh], 0x8(%[d]) \n\t"
-        "gssdlc1 %[fl], 0x7(%[d]) \n\t"
-        "gssdrc1 %[fl], 0x0(%[d]) \n\t"
         ".set pop \n\t"
         :[fh]"=&f"(final.h), [fl]"=&f"(final.l),
          [r3h]"+f"(result3.h), [r3l]"+f"(result3.l),
          [t]"=&f"(t)
         :[r1h]"f"(result1.h), [r1l]"f"(result1.l),
          [r2h]"f"(result2.h), [r2l]"f"(result2.l),
-         [r4h]"f"(result4.h), [r4l]"f"(result4.l),
-         [d]"r"(data + stride * y + x)
-        :"memory"
+         [r4h]"f"(result4.h), [r4l]"f"(result4.l)
+      );
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "gssdlc1 %[fh], 0xf(%[d]) \n\t"
+        "gssdrc1 %[fh], 0x8(%[d]) \n\t"
+        "gssdlc1 %[fl], 0x7(%[d]) \n\t"
+        "gssdrc1 %[fl], 0x0(%[d]) \n\t"
+        ".set pop \n\t"
+        ::[fh]"f"(final.h), [fl]"f"(final.l),
+          [d]"r"(data + stride * y + x)
+        : "memory"
       );
     }
 
@@ -568,14 +606,20 @@ AlphaBoxBlur::BoxBlur_LS3(uint8_t* aData,
         ".set arch=loongson3a \n\t"
         _mm_packsswh(f, r, zero, t)
         _mm_packushb(f, f, zero, t)
-        "swc1 %[fl], (%[d]) \n\t"
         ".set pop \n\t"
         :[fh]"=&f"(final.h), [fl]"=&f"(final.l),
          [t]"=&f"(t)
-        :[d]"r"(data + stride * y + x),
-         [rh]"f"(result.h), [rl]"f"(result.l),
+        :[rh]"f"(result.h), [rl]"f"(result.l),
          [zeroh]"f"(zero.h), [zerol]"f"(zero.l)
-        :"memory"
+      );
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "swc1 %[fl], (%[d]) \n\t"
+        ".set pop \n\t"
+        ::[fl]"f"(final.l),
+          [d]"r"(data + stride * y + x)
+        : "memory"
       );
     }
   }
