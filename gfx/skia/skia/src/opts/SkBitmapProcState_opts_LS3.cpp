@@ -394,33 +394,55 @@ void convolveVertically_LS3(const SkConvolutionFilter1D::ConvolutionFixed* filte
             );
         }
 
-        double s4, s64;
-        asm volatile (
-          ".set push \n\t"
-          ".set arch=loongson3a \n\t"
-          "li %[tmp], 32 \n\t"
-          "mtc1 %[tmp], %[s4] \n\t"
-          "li %[tmp], 64 \n\t"
-          "mtc1 %[tmp], %[s64] \n\t"
-          ".set pop \n\t"
-          :[s4]"=f"(s4), [s64]"=f"(s64),
-           [tmp]"=&r"(tmp)
-        );
-        for (int out_x = width; out_x < pixel_width; out_x++) {
-            double t;
-
-            asm volatile (
-                ".set push \n\t"
-                ".set arch=loongson3a \n\t"
-                "swc1 %[accum0l], (%[out_row]) \n\t"
-                 _mm_psrlq(accum0, accum0, s4, s64, t)
-                ".set pop \n\t"
-                :[t]"=&f"(t),
-                 [accum0h]"+f"(accum0h), [accum0l]"+f"(accum0l)
-                :[out_row]"r"(out_row), [s4]"f"(s4), [s64]"f"(s64)
-                :"memory"
-            );
-            out_row += 4;
+        switch (pixel_width - width) {
+            case 1: {
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
+                    "swc1 %[accum0l], (%[out_row]) \n\t"
+                    ".set pop \n\t"
+                    ::[accum0l]"f"(accum0l), [out_row]"r"(out_row)
+                    :"memory"
+                );
+                break;
+            }
+            case 3: {
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
+                    "gssdlc1 %[accum0l], 7(%[out_row]) \n\t"
+                    "gssdrc1 %[accum0l], (%[out_row]) \n\t"
+                    "swc1 %[accum0h], 8(%[out_row]) \n\t"
+                    ".set pop \n\t"
+                    ::[accum0h]"f"(accum0h), [accum0l]"f"(accum0l),
+                      [out_row]"r"(out_row)
+                    :"memory"
+                );
+                break;
+            }
+            case 4: {
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
+                    "gssdlc1 %[accum0h], 8+7(%[out_row]) \n\t"
+                    "gssdrc1 %[accum0h], 8(%[out_row]) \n\t"
+                    ".set pop \n\t"
+                    ::[accum0h]"f"(accum0h), [out_row]"r"(out_row)
+                    :"memory"
+                );
+            }
+            case 2: {
+                asm volatile (
+                    ".set push \n\t"
+                    ".set arch=loongson3a \n\t"
+                    "gssdlc1 %[accum0l], 7(%[out_row]) \n\t"
+                    "gssdrc1 %[accum0l], (%[out_row]) \n\t"
+                    ".set pop \n\t"
+                    ::[accum0l]"f"(accum0l), [out_row]"r"(out_row)
+                    :"memory"
+                );
+            break;
+            }
         }
     }
 }
