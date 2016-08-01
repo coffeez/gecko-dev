@@ -398,7 +398,7 @@ void convolveVertically_LS3(const SkConvolutionFilter1D::ConvolutionFixed* filte
         asm volatile (
           ".set push \n\t"
           ".set arch=loongson3a \n\t"
-          "li %[tmp], 4 \n\t"
+          "li %[tmp], 32 \n\t"
           "mtc1 %[tmp], %[s4] \n\t"
           "li %[tmp], 64 \n\t"
           "mtc1 %[tmp], %[s64] \n\t"
