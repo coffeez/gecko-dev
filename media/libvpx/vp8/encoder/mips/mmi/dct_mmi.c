@@ -43,8 +43,37 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
 {
 #if 1
     int pitch_half = pitch/2;
-    double ftmp[13];
     uint64_t tmp[1];
+
+#if _MIPS_SIM == _ABIO32
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f2");
+    register double ftmp2 asm ("$f4");
+    register double ftmp3 asm ("$f6");
+    register double ftmp4 asm ("$f8");
+    register double ftmp5 asm ("$f10");
+    register double ftmp6 asm ("$f12");
+    register double ftmp7 asm ("$f14");
+    register double ftmp8 asm ("$f16");
+    register double ftmp9 asm ("$f18");
+    register double ftmp10 asm ("$f20");
+    register double ftmp11 asm ("$f22");
+    register double ftmp12 asm ("$f24");
+#else
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f1");
+    register double ftmp2 asm ("$f2");
+    register double ftmp3 asm ("$f3");
+    register double ftmp4 asm ("$f4");
+    register double ftmp5 asm ("$f5");
+    register double ftmp6 asm ("$f6");
+    register double ftmp7 asm ("$f7");
+    register double ftmp8 asm ("$f8");
+    register double ftmp9 asm ("$f9");
+    register double ftmp10 asm ("$f10");
+    register double ftmp11 asm ("$f11");
+    register double ftmp12 asm ("$f12");
+#endif  // _MIPS_SIM == _ABIO32
 
     DECLARE_ALIGNED(8, const uint64_t, ff_ph_01)    = {0x0001000100010001ULL};
     DECLARE_ALIGNED(8, const uint64_t, ff_ph_07)    = {0x0007000700070007ULL};
@@ -103,7 +132,7 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
         "mov.d      %[ftmp8],   %[ftmp4]                        \n\t"
         "mtc1       %[tmp0],    %[ftmp11]                       \n\t"
 
-        "dmtc1      %[ff_pw_14500],             %[ftmp12]       \n\t"
+        "ldc1       %[ftmp12],  %[ff_pw_14500]                  \n\t"
         "punpcklhw  %[ftmp9],   %[ftmp7],       %[ftmp8]        \n\t"
         "punpcklhw  %[ftmp10],  %[ff_ph_2217],  %[ff_ph_5352]   \n\t"
         "pmaddhw    %[ftmp5],   %[ftmp9],       %[ftmp10]       \n\t"
@@ -116,7 +145,7 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
         "psraw      %[ftmp6],   %[ftmp6],       %[ftmp11]       \n\t"
         "packsswh   %[ftmp2],   %[ftmp5],       %[ftmp6]        \n\t"
 
-        "dmtc1      %[ff_pw_7500],              %[ftmp12]       \n\t"
+        "ldc1       %[ftmp12],  %[ff_pw_7500]                   \n\t"
         "punpcklhw  %[ftmp9],   %[ftmp8],       %[ftmp7]        \n\t"
         "punpcklhw  %[ftmp10],  %[ff_ph_2217],  %[ff_ph_neg5352]\n\t"
         "pmaddhw    %[ftmp5],   %[ftmp9],       %[ftmp10]       \n\t"
@@ -133,6 +162,23 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
                      %[ftmp5], %[ftmp6], %[ftmp7], %[ftmp8],
                      %[ftmp9], %[tmp0], %[ftmp0], %[ftmp10])
 
+        : [ftmp0]"=&f"(ftmp0),              [ftmp1]"=&f"(ftmp1),
+          [ftmp2]"=&f"(ftmp2),              [ftmp3]"=&f"(ftmp3),
+          [ftmp4]"=&f"(ftmp4),              [ftmp5]"=&f"(ftmp5),
+          [ftmp6]"=&f"(ftmp6),              [ftmp7]"=&f"(ftmp7),
+          [ftmp8]"=&f"(ftmp8),              [ftmp9]"=&f"(ftmp9),
+          [ftmp10]"=&f"(ftmp10),            [ftmp11]"=&f"(ftmp11),
+          [ftmp12]"=&f"(ftmp12),
+          [tmp0]"=&r"(tmp[0])
+        : [pitch_half]"r"((mips_reg)pitch_half),
+          [a]"r"(a),                        [b]"r"(b),
+          [c]"r"(c),                        [d]"r"(d),
+          [ff_ph_2217]"f"(ff_ph_2217),
+          [ff_ph_5352]"f"(ff_ph_5352),      [ff_ph_neg5352]"f"(ff_ph_neg5352),
+          [ff_pw_14500]"m"(ff_pw_14500),    [ff_pw_7500]"m"(ff_pw_7500)
+    );
+
+    __asm__ volatile (
         "gssdlc1    %[ftmp1],   0x07(%[output])                 \n\t"
         "gssdrc1    %[ftmp1],   0x00(%[output])                 \n\t"
         "gssdlc1    %[ftmp2],   0x0f(%[output])                 \n\t"
@@ -141,21 +187,9 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
         "gssdrc1    %[ftmp3],   0x10(%[output])                 \n\t"
         "gssdlc1    %[ftmp4],   0x1f(%[output])                 \n\t"
         "gssdrc1    %[ftmp4],   0x18(%[output])                 \n\t"
-        : [ftmp0]"=&f"(ftmp[0]),            [ftmp1]"=&f"(ftmp[1]),
-          [ftmp2]"=&f"(ftmp[2]),            [ftmp3]"=&f"(ftmp[3]),
-          [ftmp4]"=&f"(ftmp[4]),            [ftmp5]"=&f"(ftmp[5]),
-          [ftmp6]"=&f"(ftmp[6]),            [ftmp7]"=&f"(ftmp[7]),
-          [ftmp8]"=&f"(ftmp[8]),            [ftmp9]"=&f"(ftmp[9]),
-          [ftmp10]"=&f"(ftmp[10]),          [ftmp11]"=&f"(ftmp[11]),
-          [ftmp12]"=&f"(ftmp[12]),
-          [tmp0]"=&r"(tmp[0]),
-          [output]"+&r"(output)
-        : [pitch_half]"r"((mips_reg)pitch_half),
-          [a]"r"(a),                        [b]"r"(b),
-          [c]"r"(c),                        [d]"r"(d),
-          [ff_ph_2217]"f"(ff_ph_2217),
-          [ff_ph_5352]"f"(ff_ph_5352),      [ff_ph_neg5352]"f"(ff_ph_neg5352),
-          [ff_pw_14500]"r"(ff_pw_14500),    [ff_pw_7500]"r"(ff_pw_7500)
+        ::[ftmp1]"f"(ftmp1),                [ftmp2]"f"(ftmp2),
+          [ftmp3]"f"(ftmp3),                [ftmp4]"f"(ftmp4),
+          [output]"r"(output)
         : "memory"
     );
 
@@ -177,21 +211,21 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
         "psubh      %[ftmp8],   %[ftmp1],       %[ftmp4]        \n\t"
 
         "pcmpeqh    %[ftmp0],   %[ftmp8],       %[ftmp0]        \n\t"
-        "dmtc1      %[ff_ph_01],                %[ftmp9]        \n\t"
+        "ldc1       %[ftmp9],   %[ff_ph_01]                     \n\t"
         "paddh      %[ftmp0],   %[ftmp0],       %[ftmp9]        \n\t"
 
         "paddh      %[ftmp1],   %[ftmp5],       %[ftmp6]        \n\t"
         "psubh      %[ftmp2],   %[ftmp5],       %[ftmp6]        \n\t"
-        "dmtc1      %[ff_ph_07],                %[ftmp9]        \n\t"
-        "dli        %[tmp0],    0x04                            \n\t"
+        "ldc1       %[ftmp9],   %[ff_ph_07]                     \n\t"
+        "li         %[tmp0],    0x04                            \n\t"
         "paddh      %[ftmp1],   %[ftmp1],       %[ftmp9]        \n\t"
         "paddh      %[ftmp2],   %[ftmp2],       %[ftmp9]        \n\t"
-        "dmtc1      %[tmp0],    %[ftmp9]                        \n\t"
+        "mtc1       %[tmp0],    %[ftmp9]                        \n\t"
         "psrah      %[ftmp1],   %[ftmp1],       %[ftmp9]        \n\t"
         "psrah      %[ftmp2],   %[ftmp2],       %[ftmp9]        \n\t"
 
         "li         %[tmp0],    0x10                            \n\t"
-        "dmtc1      %[ff_pw_12000],             %[ftmp12]       \n\t"
+        "ldc1       %[ftmp12],  %[ff_pw_12000]                  \n\t"
         "mtc1       %[tmp0],    %[ftmp9]                        \n\t"
 
         "punpcklhw  %[ftmp5],   %[ftmp7],       %[ftmp8]        \n\t"
@@ -207,7 +241,7 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
         "packsswh   %[ftmp3],   %[ftmp10],      %[ftmp11]       \n\t"
         "paddh      %[ftmp3],   %[ftmp3],       %[ftmp0]        \n\t"
 
-        "dmtc1      %[ff_pw_51000],             %[ftmp12]       \n\t"
+        "ldc1       %[ftmp12],  %[ff_pw_51000]                  \n\t"
         "punpcklhw  %[ftmp5],   %[ftmp8],       %[ftmp7]        \n\t"
         "punpcklhw  %[ftmp6],   %[ff_ph_2217],  %[ff_ph_neg535x]\n\t"
         "pmaddhw    %[ftmp10],  %[ftmp5],       %[ftmp6]        \n\t"
@@ -219,7 +253,22 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
         "psraw      %[ftmp10],  %[ftmp10],      %[ftmp9]        \n\t"
         "psraw      %[ftmp11],  %[ftmp11],      %[ftmp9]        \n\t"
         "packsswh   %[ftmp4],   %[ftmp10],      %[ftmp11]       \n\t"
+        : [ftmp0]"=&f"(ftmp0),              [ftmp1]"=&f"(ftmp1),
+          [ftmp2]"=&f"(ftmp2),              [ftmp3]"=&f"(ftmp3),
+          [ftmp4]"=&f"(ftmp4),              [ftmp5]"=&f"(ftmp5),
+          [ftmp6]"=&f"(ftmp6),              [ftmp7]"=&f"(ftmp7),
+          [ftmp8]"=&f"(ftmp8),              [ftmp9]"=&f"(ftmp9),
+          [ftmp10]"=&f"(ftmp10),            [ftmp11]"=&f"(ftmp11),
+          [ftmp12]"=&f"(ftmp12),
+          [tmp0]"=r"(tmp[0])
+        : [ff_ph_01]"m"(ff_ph_01),          [ff_ph_07]"m"(ff_ph_07),
+          [ff_ph_2217]"f"(ff_ph_2217),
+          [ff_ph_535x]"f"(ff_ph_535x),      [ff_ph_neg535x]"f"(ff_ph_neg535x),
+          [ff_pw_12000]"m"(ff_pw_12000),    [ff_pw_51000]"m"(ff_pw_51000),
+          [output]"r"(output)
+    );
 
+    __asm__ volatile (
         "gssdlc1    %[ftmp1],   0x07(%[output])                 \n\t"
         "gssdrc1    %[ftmp1],   0x00(%[output])                 \n\t"
         "gssdlc1    %[ftmp3],   0x0f(%[output])                 \n\t"
@@ -228,18 +277,9 @@ void vp8_short_fdct4x4_mmi(short *input, short *output, int pitch)
         "gssdrc1    %[ftmp2],   0x10(%[output])                 \n\t"
         "gssdlc1    %[ftmp4],   0x1f(%[output])                 \n\t"
         "gssdrc1    %[ftmp4],   0x18(%[output])                 \n\t"
-        : [ftmp0]"=&f"(ftmp[0]),            [ftmp1]"=&f"(ftmp[1]),
-          [ftmp2]"=&f"(ftmp[2]),            [ftmp3]"=&f"(ftmp[3]),
-          [ftmp4]"=&f"(ftmp[4]),            [ftmp5]"=&f"(ftmp[5]),
-          [ftmp6]"=&f"(ftmp[6]),            [ftmp7]"=&f"(ftmp[7]),
-          [ftmp8]"=&f"(ftmp[8]),            [ftmp9]"=&f"(ftmp[9]),
-          [ftmp10]"=&f"(ftmp[10]),          [ftmp11]"=&f"(ftmp[11]),
-          [ftmp12]"=&f"(ftmp[12]),
-          [tmp0]"=&r"(tmp[0]),              [output]"+&r"(output)
-        : [ff_ph_01]"r"(ff_ph_01),          [ff_ph_07]"r"(ff_ph_07),
-          [ff_ph_2217]"f"(ff_ph_2217),
-          [ff_ph_535x]"f"(ff_ph_535x),      [ff_ph_neg535x]"f"(ff_ph_neg535x),
-          [ff_pw_12000]"r"(ff_pw_12000),    [ff_pw_51000]"r"(ff_pw_51000)
+        ::[ftmp1]"f"(ftmp1),                [ftmp2]"f"(ftmp2),
+          [ftmp3]"f"(ftmp3),                [ftmp4]"f"(ftmp4),
+          [output]"r"(output)
         : "memory"
     );
 
