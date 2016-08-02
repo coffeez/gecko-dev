@@ -75,7 +75,27 @@ void vp8_dequant_idct_add_mmi(short *input, short *dq,
                               unsigned char *dest, int stride)
 {
 #if 1
-    double ftmp[8];
+    uint64_t tmp[1];
+
+#if _MIPS_SIM == _ABIO32
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f2");
+    register double ftmp2 asm ("$f4");
+    register double ftmp3 asm ("$f6");
+    register double ftmp4 asm ("$f8");
+    register double ftmp5 asm ("$f10");
+    register double ftmp6 asm ("$f12");
+    register double ftmp7 asm ("$f14");
+#else
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f1");
+    register double ftmp2 asm ("$f2");
+    register double ftmp3 asm ("$f3");
+    register double ftmp4 asm ("$f4");
+    register double ftmp5 asm ("$f5");
+    register double ftmp6 asm ("$f6");
+    register double ftmp7 asm ("$f7");
+#endif  // _MIPS_SIM == _ABIO32
 
     __asm__ volatile (
         "gsldlc1    %[ftmp0],   0x07(%[dq])                     \n\t"
@@ -100,7 +120,14 @@ void vp8_dequant_idct_add_mmi(short *input, short *dq,
         "pmullh     %[ftmp1],   %[ftmp1],       %[ftmp5]        \n\t"
         "pmullh     %[ftmp2],   %[ftmp2],       %[ftmp6]        \n\t"
         "pmullh     %[ftmp3],   %[ftmp3],       %[ftmp7]        \n\t"
+        : [ftmp0]"=&f"(ftmp0),              [ftmp1]"=&f"(ftmp1),
+          [ftmp2]"=&f"(ftmp2),              [ftmp3]"=&f"(ftmp3),
+          [ftmp4]"=&f"(ftmp4),              [ftmp5]"=&f"(ftmp5),
+          [ftmp6]"=&f"(ftmp6),              [ftmp7]"=&f"(ftmp7)
+        : [dq]"r"(dq),                      [input]"r"(input)
+    );
 
+    __asm__ volatile (
         "gssdlc1    %[ftmp0],   0x07(%[input])                  \n\t"
         "gssdrc1    %[ftmp0],   0x00(%[input])                  \n\t"
         "gssdlc1    %[ftmp1],   0x0f(%[input])                  \n\t"
@@ -109,12 +136,9 @@ void vp8_dequant_idct_add_mmi(short *input, short *dq,
         "gssdrc1    %[ftmp2],   0x10(%[input])                  \n\t"
         "gssdlc1    %[ftmp3],   0x1f(%[input])                  \n\t"
         "gssdrc1    %[ftmp3],   0x18(%[input])                  \n\t"
-        : [ftmp0]"=&f"(ftmp[0]),            [ftmp1]"=&f"(ftmp[1]),
-          [ftmp2]"=&f"(ftmp[2]),            [ftmp3]"=&f"(ftmp[3]),
-          [ftmp4]"=&f"(ftmp[4]),            [ftmp5]"=&f"(ftmp[5]),
-          [ftmp6]"=&f"(ftmp[6]),            [ftmp7]"=&f"(ftmp[7]),
-          [input]"+&r"(input)
-        : [dq]"r"(dq)
+        ::[ftmp0]"f"(ftmp0),                [ftmp1]"f"(ftmp1),
+          [ftmp2]"f"(ftmp2),                [ftmp3]"f"(ftmp3),
+          [input]"r"(input)
         : "memory"
     );
 
@@ -130,8 +154,9 @@ void vp8_dequant_idct_add_mmi(short *input, short *dq,
         "gssdrc1    %[ftmp0],   0x10(%[input])                  \n\t"
         "sdl        $0,         0x1f(%[input])                  \n\t"
         "sdr        $0,         0x18(%[input])                  \n\t"
-        : [ftmp0]"=&f"(ftmp[0]),            [input]"+&r"(input)
-        ::"memory"
+        : [ftmp0]"=&f"(ftmp0)
+        : [input]"r"(input)
+        : "memory"
     );
 #else
     int i;
