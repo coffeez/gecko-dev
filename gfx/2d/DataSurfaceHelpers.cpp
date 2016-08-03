@@ -52,13 +52,53 @@ ConvertBGRXToBGRA(uint8_t* aData, const IntSize &aSize, const int32_t aStride)
   int height = aSize.height, width = aSize.width * 4;
 
   for (int row = 0; row < height; ++row) {
-    for (int column = 0; column < width; column += 4) {
 #ifdef IS_BIG_ENDIAN
-      aData[column] = 0xFF;
+  const int offset = 0;
 #else
-      aData[column + 3] = 0xFF;
+  const int offset = 3;
 #endif
+  const int byte = 0xFF;
+
+#ifdef _MIPS_ARCH_LOONGSON3A
+    for (int column = 0; column < width; column += 0x40) {
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "gssbx %[byte], 4 * 0 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 1 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 2 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 3 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 4 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 5 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 6 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 7 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 8 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 9 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 10 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 11 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 12 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 13 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 14 + %[offset](%[base], %[index]) \n\t"
+        "gssbx %[byte], 4 * 15 + %[offset](%[base], %[index]) \n\t"
+        ".set pop \n\t"
+        ::[base]"r"(aData), [index]"r"(column),
+          [byte]"r"(byte), [offset]"i"(offset)
+      );
     }
+    for (int column = width - (width & 0x3F); column < width; column += 4) {
+      asm volatile (
+        ".set push \n\t"
+        ".set arch=loongson3a \n\t"
+        "gssbx %[byte], %[offset](%[base], %[index]) \n\t"
+        ".set pop \n\t"
+        ::[base]"r"(aData), [index]"r"(column),
+          [byte]"r"(byte), [offset]"i"(offset)
+      );
+    }
+#else
+    for (int column = 0; column < width; column += 4)
+      aData[column + offset] = byte;
+#endif
     aData += aStride;
   }
 }
