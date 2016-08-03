@@ -34,7 +34,7 @@ void vp8_fast_quantize_b_mmi(BLOCK *b, BLOCKD *d)
     eob = -1;
 
     __asm__ volatile (
-        "dli        %[tmp0],    0x0f                            \n\t"
+        "li         %[tmp0],    0x0f                            \n\t"
         "xor        %[ftmp0],   %[ftmp0],       %[ftmp0]        \n\t"
         "mtc1       %[tmp0],    %[ftmp9]                        \n\t"
 
@@ -145,18 +145,18 @@ void vp8_fast_quantize_b_mmi(BLOCK *b, BLOCKD *d)
 
     if (y[0]) eob = 0;
     if (y[1]) eob = 1;
+    if (y[4]) eob = 2;
+    if (y[8]) eob = 3;
+    if (y[5]) eob = 4;
     if (y[2]) eob = 5;
     if (y[3]) eob = 6;
-    if (y[4]) eob = 2;
-    if (y[5]) eob = 4;
     if (y[6]) eob = 7;
-    if (y[7]) eob = 12;
-    if (y[8]) eob = 3;
     if (y[9]) eob = 8;
-    if (y[10]) eob = 11;
-    if (y[11]) eob = 13;
     if (y[12]) eob = 9;
     if (y[13]) eob = 10;
+    if (y[10]) eob = 11;
+    if (y[7]) eob = 12;
+    if (y[11]) eob = 13;
     if (y[14]) eob = 14;
     if (y[15]) eob = 15;
 
@@ -174,22 +174,22 @@ void vp8_fast_quantize_b_mmi(BLOCK *b, BLOCKD *d)
 
     eob = -1;
 
-    x0  = (coeff_ptr[0] ^ (coeff_ptr[0] >> 31)) - (coeff_ptr[0] >> 31);
-    x1  = (coeff_ptr[1] ^ (coeff_ptr[1] >> 31)) - (coeff_ptr[1] >> 31);
-    x2  = (coeff_ptr[2] ^ (coeff_ptr[2] >> 31)) - (coeff_ptr[2] >> 31);
-    x3  = (coeff_ptr[3] ^ (coeff_ptr[3] >> 31)) - (coeff_ptr[3] >> 31);
-    x4  = (coeff_ptr[4] ^ (coeff_ptr[4] >> 31)) - (coeff_ptr[4] >> 31);
-    x5  = (coeff_ptr[5] ^ (coeff_ptr[5] >> 31)) - (coeff_ptr[5] >> 31);
-    x6  = (coeff_ptr[6] ^ (coeff_ptr[6] >> 31)) - (coeff_ptr[6] >> 31);
-    x7  = (coeff_ptr[7] ^ (coeff_ptr[7] >> 31)) - (coeff_ptr[7] >> 31);
-    x8  = (coeff_ptr[8] ^ (coeff_ptr[8] >> 31)) - (coeff_ptr[8] >> 31);
-    x9  = (coeff_ptr[9] ^ (coeff_ptr[9] >> 31)) - (coeff_ptr[9] >> 31);
-    x10  = (coeff_ptr[10] ^ (coeff_ptr[10] >> 31)) - (coeff_ptr[10] >> 31);
-    x11  = (coeff_ptr[11] ^ (coeff_ptr[11] >> 31)) - (coeff_ptr[11] >> 31);
-    x12  = (coeff_ptr[12] ^ (coeff_ptr[12] >> 31)) - (coeff_ptr[12] >> 31);
-    x13  = (coeff_ptr[13] ^ (coeff_ptr[13] >> 31)) - (coeff_ptr[13] >> 31);
-    x14  = (coeff_ptr[14] ^ (coeff_ptr[14] >> 31)) - (coeff_ptr[14] >> 31);
-    x15  = (coeff_ptr[15] ^ (coeff_ptr[15] >> 31)) - (coeff_ptr[15] >> 31);
+    x0  = (coeff_ptr[0] ^ ((int)coeff_ptr[0] >> 31)) - ((int)coeff_ptr[0] >> 31);
+    x1  = (coeff_ptr[1] ^ ((int)coeff_ptr[1] >> 31)) - ((int)coeff_ptr[1] >> 31);
+    x2  = (coeff_ptr[2] ^ ((int)coeff_ptr[2] >> 31)) - ((int)coeff_ptr[2] >> 31);
+    x3  = (coeff_ptr[3] ^ ((int)coeff_ptr[3] >> 31)) - ((int)coeff_ptr[3] >> 31);
+    x4  = (coeff_ptr[4] ^ ((int)coeff_ptr[4] >> 31)) - ((int)coeff_ptr[4] >> 31);
+    x5  = (coeff_ptr[5] ^ ((int)coeff_ptr[5] >> 31)) - ((int)coeff_ptr[5] >> 31);
+    x6  = (coeff_ptr[6] ^ ((int)coeff_ptr[6] >> 31)) - ((int)coeff_ptr[6] >> 31);
+    x7  = (coeff_ptr[7] ^ ((int)coeff_ptr[7] >> 31)) - ((int)coeff_ptr[7] >> 31);
+    x8  = (coeff_ptr[8] ^ ((int)coeff_ptr[8] >> 31)) - ((int)coeff_ptr[8] >> 31);
+    x9  = (coeff_ptr[9] ^ ((int)coeff_ptr[9] >> 31)) - ((int)coeff_ptr[9] >> 31);
+    x10  = (coeff_ptr[10] ^ ((int)coeff_ptr[10] >> 31)) - ((int)coeff_ptr[10] >> 31);
+    x11  = (coeff_ptr[11] ^ ((int)coeff_ptr[11] >> 31)) - ((int)coeff_ptr[11] >> 31);
+    x12  = (coeff_ptr[12] ^ ((int)coeff_ptr[12] >> 31)) - ((int)coeff_ptr[12] >> 31);
+    x13  = (coeff_ptr[13] ^ ((int)coeff_ptr[13] >> 31)) - ((int)coeff_ptr[13] >> 31);
+    x14  = (coeff_ptr[14] ^ ((int)coeff_ptr[14] >> 31)) - ((int)coeff_ptr[14] >> 31);
+    x15  = (coeff_ptr[15] ^ ((int)coeff_ptr[15] >> 31)) - ((int)coeff_ptr[15] >> 31);
 
     y0  = ((x0 + round_ptr[0]) * quant_ptr[0]) >> 16;
     y1  = ((x1 + round_ptr[1]) * quant_ptr[1]) >> 16;
@@ -208,22 +208,22 @@ void vp8_fast_quantize_b_mmi(BLOCK *b, BLOCKD *d)
     y14  = ((x14 + round_ptr[14]) * quant_ptr[14]) >> 16;
     y15  = ((x15 + round_ptr[15]) * quant_ptr[15]) >> 16;
 
-    x0  = (y0 ^ (coeff_ptr[0] >> 31)) - (coeff_ptr[0] >> 31);
-    x1  = (y1 ^ (coeff_ptr[1] >> 31)) - (coeff_ptr[1] >> 31);
-    x2  = (y2 ^ (coeff_ptr[2] >> 31)) - (coeff_ptr[2] >> 31);
-    x3  = (y3 ^ (coeff_ptr[3] >> 31)) - (coeff_ptr[3] >> 31);
-    x4  = (y4 ^ (coeff_ptr[4] >> 31)) - (coeff_ptr[4] >> 31);
-    x5  = (y5 ^ (coeff_ptr[5] >> 31)) - (coeff_ptr[5] >> 31);
-    x6  = (y6 ^ (coeff_ptr[6] >> 31)) - (coeff_ptr[6] >> 31);
-    x7  = (y7 ^ (coeff_ptr[7] >> 31)) - (coeff_ptr[7] >> 31);
-    x8  = (y8 ^ (coeff_ptr[8] >> 31)) - (coeff_ptr[8] >> 31);
-    x9  = (y9 ^ (coeff_ptr[9] >> 31)) - (coeff_ptr[9] >> 31);
-    x10  = (y10 ^ (coeff_ptr[10] >> 31)) - (coeff_ptr[10] >> 31);
-    x11  = (y11 ^ (coeff_ptr[11] >> 31)) - (coeff_ptr[11] >> 31);
-    x12  = (y12 ^ (coeff_ptr[12] >> 31)) - (coeff_ptr[12] >> 31);
-    x13  = (y13 ^ (coeff_ptr[13] >> 31)) - (coeff_ptr[13] >> 31);
-    x14  = (y14 ^ (coeff_ptr[14] >> 31)) - (coeff_ptr[14] >> 31);
-    x15  = (y15 ^ (coeff_ptr[15] >> 31)) - (coeff_ptr[15] >> 31);
+    x0  = (y0 ^ ((int)coeff_ptr[0] >> 31)) - ((int)coeff_ptr[0] >> 31);
+    x1  = (y1 ^ ((int)coeff_ptr[1] >> 31)) - ((int)coeff_ptr[1] >> 31);
+    x2  = (y2 ^ ((int)coeff_ptr[2] >> 31)) - ((int)coeff_ptr[2] >> 31);
+    x3  = (y3 ^ ((int)coeff_ptr[3] >> 31)) - ((int)coeff_ptr[3] >> 31);
+    x4  = (y4 ^ ((int)coeff_ptr[4] >> 31)) - ((int)coeff_ptr[4] >> 31);
+    x5  = (y5 ^ ((int)coeff_ptr[5] >> 31)) - ((int)coeff_ptr[5] >> 31);
+    x6  = (y6 ^ ((int)coeff_ptr[6] >> 31)) - ((int)coeff_ptr[6] >> 31);
+    x7  = (y7 ^ ((int)coeff_ptr[7] >> 31)) - ((int)coeff_ptr[7] >> 31);
+    x8  = (y8 ^ ((int)coeff_ptr[8] >> 31)) - ((int)coeff_ptr[8] >> 31);
+    x9  = (y9 ^ ((int)coeff_ptr[9] >> 31)) - ((int)coeff_ptr[9] >> 31);
+    x10  = (y10 ^ ((int)coeff_ptr[10] >> 31)) - ((int)coeff_ptr[10] >> 31);
+    x11  = (y11 ^ ((int)coeff_ptr[11] >> 31)) - ((int)coeff_ptr[11] >> 31);
+    x12  = (y12 ^ ((int)coeff_ptr[12] >> 31)) - ((int)coeff_ptr[12] >> 31);
+    x13  = (y13 ^ ((int)coeff_ptr[13] >> 31)) - ((int)coeff_ptr[13] >> 31);
+    x14  = (y14 ^ ((int)coeff_ptr[14] >> 31)) - ((int)coeff_ptr[14] >> 31);
+    x15  = (y15 ^ ((int)coeff_ptr[15] >> 31)) - ((int)coeff_ptr[15] >> 31);
 
     qcoeff_ptr[0] = x0;
     qcoeff_ptr[1] = x1;
@@ -261,20 +261,20 @@ void vp8_fast_quantize_b_mmi(BLOCK *b, BLOCKD *d)
 
     if (y0) eob = 0;
     if (y1) eob = 1;
+    if (y4) eob = 2;
+    if (y8) eob = 3;
+    if (y5) eob = 4;
     if (y2) eob = 5;
     if (y3) eob = 6;
-    if (y4) eob = 2;
-    if (y5) eob = 4;
     if (y6) eob = 7;
-    if (y7) eob = 12;
-    if (y8) eob = 3;
     if (y9) eob = 8;
+    if (y12) eob = 9;
+    if (y13) eob = 10;
     if (y10) eob = 11;
+    if (y7) eob = 12;
     if (y11) eob = 13;
     if (y14) eob = 14;
     if (y15) eob = 15;
-    if (y12) eob = 9;
-    if (y13) eob = 10;
 
     *d->eob = (char)(eob + 1);
 #endif
