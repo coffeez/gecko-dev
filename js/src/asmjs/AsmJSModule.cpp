@@ -1750,6 +1750,7 @@ AsmJSModule::clone(JSContext* cx, ScopedJSDeletePtr<AsmJSModule>* moduleOut) con
     out.profilingEnabled_ = profilingEnabled_;
 
     if (profilingEnabled_) {
+#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
         for (size_t i = 0; i < out.codeRanges_.length(); i++) {
             CodeRange& cr = out.codeRanges_[i];
             if (!cr.isFunction())
@@ -1762,6 +1763,7 @@ AsmJSModule::clone(JSContext* cx, ScopedJSDeletePtr<AsmJSModule>* moduleOut) con
             if (!out.staticLinkData_.relativeLinks.append(link))
                 return false;
         }
+#endif
         if (!out.profilingLabels_.resize(profilingLabels_.length()))
             return false;
         for (size_t i = 0; i < profilingLabels_.length(); i++) {
