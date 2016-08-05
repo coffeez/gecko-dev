@@ -45,8 +45,8 @@ __m128i Divide(__m128i aValues, __m128i aDivisor)
   asm volatile (
     ".set push \n\t"
     ".set arch=loongson3a \n\t"
-    "li %[tmp], 0x80000000 \n\t"
-    "mtc1 %[tmp], %[ral] \n\t"
+    "dli %[tmp], 0x80000000 \n\t"
+    "dmtc1 %[tmp], %[ral] \n\t"
     "xor %[maskl], %[maskl], %[maskl] \n\t"
     "mov.d %[rah], %[ral] \n\t"
     "li %[tmp], 0xffffffff \n\t"
