@@ -284,6 +284,24 @@ class LAsmJSLoadFuncPtr : public LInstructionHelper<1, 1, 0>
     }
 };
 
+class LSebI : public LInstructionHelper<1, 1, 0>
+{
+  public:
+    LIR_HEADER(SebI);
+    explicit LSebI(const LAllocation& num) {
+        setOperand(0, num);
+    }
+};
+
+class LSehI : public LInstructionHelper<1, 1, 0>
+{
+  public:
+    LIR_HEADER(SehI);
+    explicit LSehI(const LAllocation& num) {
+        setOperand(0, num);
+    }
+};
+
 } // namespace jit
 } // namespace js
 

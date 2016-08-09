@@ -183,6 +183,8 @@ class CodeGeneratorMIPSShared : public CodeGeneratorShared
   public:
     CodeGeneratorMIPSShared(MIRGenerator* gen, LIRGraph* graph, MacroAssembler* masm);
 
+    void visitSebI(LSebI* ins);
+    void visitSehI(LSehI* ins);
     void visitValue(LValue* value);
     void visitDouble(LDouble* ins);
     void visitFloat32(LFloat32* ins);
