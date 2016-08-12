@@ -82,7 +82,6 @@ namespace jit {
     _(Lsh)                                                                  \
     _(Rsh)                                                                  \
     _(Ursh)                                                                 \
-    _(SignExtend)                                                           \
     _(MinMax)                                                               \
     _(Abs)                                                                  \
     _(Clz)                                                                  \

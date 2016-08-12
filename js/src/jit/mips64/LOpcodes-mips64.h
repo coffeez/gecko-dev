@@ -11,8 +11,6 @@
 
 #define LIR_CPU_OPCODE_LIST(_)  \
     _(ModMaskI)                 \
-    _(UDivOrMod)                \
-    _(SebI)                     \
-    _(SehI)
+    _(UDivOrMod)
 
 #endif // jit_mips64_LOpcodes_mips64_h__

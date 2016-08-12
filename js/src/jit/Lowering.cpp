@@ -1223,19 +1223,6 @@ LIRGenerator::visitUrsh(MUrsh* ins)
 }
 
 void
-LIRGenerator::visitSignExtend(MSignExtend* ins)
-{
-#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
-    if (MSignExtend::Byte == ins->getMode())
-        define(new(alloc()) LSebI(useRegisterAtStart(ins->input())), ins);
-    else if (MSignExtend::Half == ins->getMode())
-        define(new(alloc()) LSehI(useRegisterAtStart(ins->input())), ins);
-#else
-    MOZ_CRASH("NYI");
-#endif
-}
-
-void
 LIRGenerator::visitFloor(MFloor* ins)
 {
     MIRType type = ins->input()->type();

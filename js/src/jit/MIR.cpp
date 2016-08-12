@@ -2385,38 +2385,6 @@ MBinaryArithInstruction::constantDoubleResult(TempAllocator& alloc)
 }
 
 MDefinition*
-MRsh::foldsTo(TempAllocator& alloc)
-{
-#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
-    MDefinition* lhs = getOperand(0);
-    MDefinition* rhs = getOperand(1);
-
-    if (!rhs->isConstantValue())
-        return this;
-
-    if (MDefinition::Op_Lsh != lhs->op())
-        return this;
-
-    if (!lhs->getOperand(1)->isConstantValue())
-        return this;
-
-    uint32_t shift = rhs->constantValue().toInt32();
-    uint32_t shift_lhs = lhs->getOperand(1)->constantValue().toInt32();
-    if (shift != shift_lhs)
-        return this;
-
-    switch (shift) {
-      case 16:
-        return MSignExtend::New(alloc, lhs->getOperand(0), MSignExtend::Half);
-      case 24:
-        return MSignExtend::New(alloc, lhs->getOperand(0), MSignExtend::Byte);
-    }
-#endif
-
-    return this;
-}
-
-MDefinition*
 MBinaryArithInstruction::foldsTo(TempAllocator& alloc)
 {
     if (specialization_ == MIRType_None)

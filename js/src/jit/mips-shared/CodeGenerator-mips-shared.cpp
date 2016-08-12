@@ -1214,24 +1214,6 @@ CodeGeneratorMIPSShared::visitTruncateFToInt32(LTruncateFToInt32* ins)
 }
 
 void
-CodeGeneratorMIPSShared::visitSebI(LSebI* ins)
-{
-    Register input = ToRegister(ins->input());
-    Register out = ToRegister(ins->output());
-
-    masm.as_seb(out, input);
-}
-
-void
-CodeGeneratorMIPSShared::visitSehI(LSehI* ins)
-{
-    Register input = ToRegister(ins->input());
-    Register out = ToRegister(ins->output());
-
-    masm.as_seh(out, input);
-}
-
-void
 CodeGeneratorMIPSShared::visitValue(LValue* value)
 {
     const ValueOperand out = ToOutValue(value);

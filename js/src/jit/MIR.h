@@ -5579,8 +5579,6 @@ class MRsh : public MShiftInstruction
         return specialization_ < MIRType_Object;
     }
 
-    MDefinition* foldsTo(TempAllocator& alloc) override;
-
     ALLOW_CLONE(MRsh)
 };
 
@@ -5623,43 +5621,6 @@ class MUrsh : public MShiftInstruction
     }
 
     ALLOW_CLONE(MUrsh)
-};
-
-class MSignExtend
-  : public MUnaryInstruction,
-    public NoTypePolicy::Data
-{
-  public:
-    enum Mode {
-        Byte,
-        Half,
-        Word,
-    };
-
-  private:
-    Mode mode_;
-
-    MSignExtend(MDefinition* op, Mode mode)
-      : MUnaryInstruction(op), mode_(mode)
-    {
-        setResultType(MIRType_Int32);
-        setMovable();
-    }
-
-  public:
-    INSTRUCTION_HEADER(SignExtend)
-    static MSignExtend* New(TempAllocator& alloc, MDefinition* op, Mode mode) {
-        return new(alloc) MSignExtend(op, mode);
-    }
-    static MSignExtend* NewAsmJS(TempAllocator& alloc, MDefinition* op, Mode mode) {
-        return new(alloc) MSignExtend(op, mode);
-    }
-
-    Mode getMode() {
-        return mode_;
-    }
-
-    ALLOW_CLONE(MSignExtend)
 };
 
 class MBinaryArithInstruction

@@ -12,8 +12,6 @@
 #define LIR_CPU_OPCODE_LIST(_)  \
     _(BoxFloatingPoint)         \
     _(ModMaskI)                 \
-    _(UDivOrMod)                \
-    _(SebI)                     \
-    _(SehI)
+    _(UDivOrMod)
 
 #endif // jit_mips32_LOpcodes_mips32_h__
