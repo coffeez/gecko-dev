@@ -95,6 +95,7 @@
     _(BitOpI)                       \
     _(BitOpV)                       \
     _(ShiftI)                       \
+    _(SignExtend)                   \
     _(UrshD)                        \
     _(Return)                       \
     _(Throw)                        \

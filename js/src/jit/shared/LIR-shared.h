@@ -2808,6 +2808,22 @@ class LShiftI : public LBinaryMath<0>
     }
 };
 
+// Sign extension
+class LSignExtend : public LInstructionHelper<1, 1, 0>
+{
+    MSignExtend::Mode mode_;
+
+  public:
+    LIR_HEADER(SignExtend);
+    explicit LSignExtend(const LAllocation& num, MSignExtend::Mode mode)
+      : mode_(mode)
+    {
+        setOperand(0, num);
+    }
+
+    MSignExtend::Mode mode() { return mode_; }
+};
+
 class LUrshD : public LBinaryMath<1>
 {
   public:

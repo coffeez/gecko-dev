@@ -14,6 +14,21 @@ namespace jit {
 
 //{{{ check_macroassembler_style
 // ===============================================================
+// Move instructions
+
+void
+MacroAssembler::move8SignExtend(Register src, Register dest)
+{
+    movsbl(src, dest);
+}
+
+void
+MacroAssembler::move16SignExtend(Register src, Register dest)
+{
+    movswl(src, dest);
+}
+
+// ===============================================================
 // Logical instructions
 
 void

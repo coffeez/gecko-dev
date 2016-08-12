@@ -65,6 +65,7 @@ namespace jit {
     _(Lsh)                                      \
     _(Rsh)                                      \
     _(Ursh)                                     \
+    _(SignExtend)                               \
     _(Add)                                      \
     _(Sub)                                      \
     _(Mul)                                      \
@@ -255,6 +256,21 @@ class RUrsh final : public RInstruction
     }
 
     bool recover(JSContext* cx, SnapshotIterator& iter) const;
+};
+
+class RSignExtend final : public RInstruction
+{
+  private:
+    uint8_t mode_;
+
+  public:
+    RINSTRUCTION_HEADER_(SignExtend)
+
+    virtual uint32_t numOperands() const {
+        return 1;
+    }
+
+    MOZ_MUST_USE bool recover(JSContext* cx, SnapshotIterator& iter) const;
 };
 
 class RAdd final : public RInstruction

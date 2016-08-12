@@ -698,6 +698,12 @@ class MacroAssembler : public MacroAssemblerSpecific
 
   public:
     // ===============================================================
+    // Move instructions
+
+    inline void move8SignExtend(Register src, Register dest) PER_SHARED_ARCH;
+    inline void move16SignExtend(Register src, Register dest) PER_SHARED_ARCH;
+
+    // ===============================================================
     // Logical instructions
 
     inline void not32(Register reg) PER_SHARED_ARCH;

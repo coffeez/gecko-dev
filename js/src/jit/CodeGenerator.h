@@ -389,6 +389,7 @@ class CodeGenerator : public CodeGeneratorSpecific
     void visitRecompileCheck(LRecompileCheck* ins);
 
     void visitRandom(LRandom* ins);
+    void visitSignExtend(LSignExtend* ins);
 
     IonScriptCounts* extractScriptCounts() {
         IonScriptCounts* counts = scriptCounts_;
