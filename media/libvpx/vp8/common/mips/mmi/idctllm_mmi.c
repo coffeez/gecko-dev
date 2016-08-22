@@ -9,7 +9,33 @@
  */
 
 #include "vp8_rtcd.h"
+#include "vpx_ports/mem.h"
 #include "vpx_ports/asmdefs_mmi.h"
+
+#define TRANSPOSE_4H(f2, f4, f6, f8, f10, f12, f14, f16, f18, r8, f0, f30) \
+        "li "#r8", 0x93                          \n\t" \
+        "xor "#f0", "#f0","#f0"                  \n\t" \
+        "mtc1 "#r8", "#f30"                      \n\t" \
+        "punpcklhw "#f10", "#f2", "#f0"          \n\t" \
+        "punpcklhw "#f18", "#f4", "#f0"          \n\t" \
+        "pshufh "#f18", "#f18", "#f30"           \n\t" \
+        "or "#f10", "#f10", "#f18"               \n\t" \
+        "punpckhhw "#f12", "#f2", "#f0"          \n\t" \
+        "punpckhhw "#f18", "#f4", "#f0"          \n\t" \
+        "pshufh "#f18", "#f18", "#f30"           \n\t" \
+        "or "#f12", "#f12", "#f18"               \n\t" \
+        "punpcklhw "#f14", "#f6", "#f0"          \n\t" \
+        "punpcklhw "#f18", "#f8", "#f0"          \n\t" \
+        "pshufh "#f18", "#f18", "#f30"           \n\t" \
+        "or "#f14", "#f14", "#f18"               \n\t" \
+        "punpckhhw "#f16", "#f6", "#f0"          \n\t" \
+        "punpckhhw "#f18", "#f8", "#f0"          \n\t" \
+        "pshufh "#f18", "#f18", "#f30"           \n\t" \
+        "or "#f16", "#f16", "#f18"               \n\t" \
+        "punpcklwd "#f2", "#f10", "#f14"         \n\t" \
+        "punpckhwd "#f4", "#f10", "#f14"         \n\t" \
+        "punpcklwd "#f6", "#f12", "#f16"         \n\t" \
+        "punpckhwd "#f8", "#f12", "#f16"         \n\t"
 
 /****************************************************************************
  * Notes:
@@ -198,6 +224,117 @@ void vp8_dc_only_idct_add_mmi(short input_dc, unsigned char *pred_ptr,
 
 void vp8_short_inv_walsh4x4_mmi(short *input, short *mb_dqcoeff)
 {
+#if 1
+    int i;
+    short output[16];
+    uint32_t tmp[1];
+    DECLARE_ALIGNED(8, const uint64_t, ff_ph_03) = {0x0003000300030003ULL};
+#if _MIPS_SIM == _ABIO32
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f2");
+    register double ftmp2 asm ("$f4");
+    register double ftmp3 asm ("$f6");
+    register double ftmp4 asm ("$f8");
+    register double ftmp5 asm ("$f10");
+    register double ftmp6 asm ("$f12");
+    register double ftmp7 asm ("$f14");
+    register double ftmp8 asm ("$f16");
+    register double ftmp9 asm ("$f18");
+    register double ftmp10 asm ("$f20");
+    register double ftmp11 asm ("$f22");
+#else
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f1");
+    register double ftmp2 asm ("$f2");
+    register double ftmp3 asm ("$f3");
+    register double ftmp4 asm ("$f4");
+    register double ftmp5 asm ("$f5");
+    register double ftmp6 asm ("$f6");
+    register double ftmp7 asm ("$f7");
+    register double ftmp8 asm ("$f8");
+    register double ftmp9 asm ("$f9");
+    register double ftmp10 asm ("$f10");
+    register double ftmp11 asm ("$f11");
+#endif  // _MIPS_SIM == _ABIO32
+
+    __asm__ volatile (
+      "li         %[tmp0],    0x03                                \n\t"
+      "xor        %[ftmp0],   %[ftmp0],       %[ftmp0]            \n\t"
+      "mtc1       %[tmp0],    %[ftmp11]                           \n\t"
+      "gsldlc1    %[ftmp1],   0x07(%[ip])                         \n\t"
+      "gsldrc1    %[ftmp1],   0x00(%[ip])                         \n\t"
+      "gsldlc1    %[ftmp2],   0x0f(%[ip])                         \n\t"
+      "gsldrc1    %[ftmp2],   0x08(%[ip])                         \n\t"
+      "gsldlc1    %[ftmp3],   0x17(%[ip])                         \n\t"
+      "gsldrc1    %[ftmp3],   0x10(%[ip])                         \n\t"
+      "gsldlc1    %[ftmp4],   0x1f(%[ip])                         \n\t"
+      "gsldrc1    %[ftmp4],   0x18(%[ip])                         \n\t"
+      "paddh      %[ftmp5],   %[ftmp1],       %[ftmp2]            \n\t"
+      "psubh      %[ftmp6],   %[ftmp1],       %[ftmp2]            \n\t"
+      "paddh      %[ftmp7],   %[ftmp3],       %[ftmp4]            \n\t"
+      "psubh      %[ftmp8],   %[ftmp3],       %[ftmp4]            \n\t"
+
+      "paddh      %[ftmp1],   %[ftmp5],       %[ftmp7]            \n\t"
+      "psubh      %[ftmp2],   %[ftmp5],       %[ftmp7]            \n\t"
+      "psubh      %[ftmp3],   %[ftmp6],       %[ftmp8]            \n\t"
+      "paddh      %[ftmp4],   %[ftmp6],       %[ftmp8]            \n\t"
+
+      TRANSPOSE_4H(%[ftmp1], %[ftmp2], %[ftmp3], %[ftmp4],
+                   %[ftmp5], %[ftmp6], %[ftmp7], %[ftmp8],
+                   %[ftmp9], %[tmp0],  %[ftmp0], %[ftmp10])
+
+      // a
+      "paddh      %[ftmp5],   %[ftmp1],       %[ftmp4]            \n\t"
+      // d
+      "psubh      %[ftmp6],   %[ftmp1],       %[ftmp4]            \n\t"
+      // b
+      "paddh      %[ftmp7],   %[ftmp2],       %[ftmp3]            \n\t"
+      // c
+      "psubh      %[ftmp8],   %[ftmp2],       %[ftmp3]            \n\t"
+
+      "paddh      %[ftmp1],   %[ftmp5],       %[ftmp7]            \n\t"
+      "paddh      %[ftmp2],   %[ftmp6],       %[ftmp8]            \n\t"
+      "psubh      %[ftmp3],   %[ftmp5],       %[ftmp7]            \n\t"
+      "psubh      %[ftmp4],   %[ftmp6],       %[ftmp8]            \n\t"
+
+      "paddh      %[ftmp1],   %[ftmp1],       %[ff_ph_03]         \n\t"
+      "psrah      %[ftmp1],   %[ftmp1],       %[ftmp11]           \n\t"
+      "paddh      %[ftmp2],   %[ftmp2],       %[ff_ph_03]         \n\t"
+      "psrah      %[ftmp2],   %[ftmp2],       %[ftmp11]           \n\t"
+      "paddh      %[ftmp3],   %[ftmp3],       %[ff_ph_03]         \n\t"
+      "psrah      %[ftmp3],   %[ftmp3],       %[ftmp11]           \n\t"
+      "paddh      %[ftmp4],   %[ftmp4],       %[ff_ph_03]         \n\t"
+      "psrah      %[ftmp4],   %[ftmp4],       %[ftmp11]           \n\t"
+
+      TRANSPOSE_4H(%[ftmp1], %[ftmp2], %[ftmp3], %[ftmp4],
+                   %[ftmp5], %[ftmp6], %[ftmp7], %[ftmp8],
+                   %[ftmp9], %[tmp0],  %[ftmp0], %[ftmp10])
+
+      "gssdlc1    %[ftmp1],   0x07(%[op])                         \n\t"
+      "gssdrc1    %[ftmp1],   0x00(%[op])                         \n\t"
+      "gssdlc1    %[ftmp2],   0x0f(%[op])                         \n\t"
+      "gssdrc1    %[ftmp2],   0x08(%[op])                         \n\t"
+      "gssdlc1    %[ftmp3],   0x17(%[op])                         \n\t"
+      "gssdrc1    %[ftmp3],   0x10(%[op])                         \n\t"
+      "gssdlc1    %[ftmp4],   0x1f(%[op])                         \n\t"
+      "gssdrc1    %[ftmp4],   0x18(%[op])                         \n\t"
+      : [ftmp0]"=&f"(ftmp0),                [ftmp1]"=&f"(ftmp1),
+        [ftmp2]"=&f"(ftmp2),                [ftmp3]"=&f"(ftmp3),
+        [ftmp4]"=&f"(ftmp4),                [ftmp5]"=&f"(ftmp5),
+        [ftmp6]"=&f"(ftmp6),                [ftmp7]"=&f"(ftmp7),
+        [ftmp8]"=&f"(ftmp8),                [ftmp9]"=&f"(ftmp9),
+        [ftmp10]"=&f"(ftmp10),              [ftmp11]"=&f"(ftmp11),
+        [tmp0]"=&r"(tmp[0])
+      : [ip]"r"(input),                     [op]"r"(output),
+        [ff_ph_03]"f"(ff_ph_03)
+      : "memory"
+    );
+
+    for(i = 0; i < 16; i++)
+    {
+        mb_dqcoeff[i * 16] = output[i];
+    }
+#else
     short output[16];
     int i;
     int a1, b1, c1, d1;
@@ -248,6 +385,7 @@ void vp8_short_inv_walsh4x4_mmi(short *input, short *mb_dqcoeff)
     {
         mb_dqcoeff[i * 16] = output[i];
     }
+#endif
 }
 
 void vp8_short_inv_walsh4x4_1_mmi(short *input, short *mb_dqcoeff)
