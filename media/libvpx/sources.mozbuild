@@ -7,6 +7,7 @@ files = {
              'vp8/common/mips/mmi/loopfilter_filters_mmi.c',
              'vp8/common/mips/mmi/sixtap_filter_mmi.c',
              'vp8/encoder/mips/mmi/dct_mmi.c',
+             'vp8/encoder/mips/mmi/subtract_mmi.c',
              'vp8/encoder/mips/mmi/vp8_quantize_mmi.c',
              'vpx_dsp/mips/sad_mmi.c',
              'vpx_dsp/mips/sub_pixel_variance_mmi.c',

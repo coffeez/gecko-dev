@@ -206,13 +206,16 @@ unsigned int vp8_sub_pixel_variance8x8_c(const unsigned char  *src_ptr, int  sou
 #define vp8_sub_pixel_variance8x8 vp8_sub_pixel_variance8x8_c
 
 void vp8_subtract_b_c(struct block *be, struct blockd *bd, int pitch);
-#define vp8_subtract_b vp8_subtract_b_c
+void vp8_subtract_b_mmi(struct block *be, struct blockd *bd, int pitch);
+#define vp8_subtract_b vp8_subtract_b_mmi
 
 void vp8_subtract_mbuv_c(short *diff, unsigned char *usrc, unsigned char *vsrc, int src_stride, unsigned char *upred, unsigned char *vpred, int pred_stride);
-#define vp8_subtract_mbuv vp8_subtract_mbuv_c
+void vp8_subtract_mbuv_mmi(short *diff, unsigned char *usrc, unsigned char *vsrc, int src_stride, unsigned char *upred, unsigned char *vpred, int pred_stride);
+#define vp8_subtract_mbuv vp8_subtract_mbuv_mmi
 
 void vp8_subtract_mby_c(short *diff, unsigned char *src, int src_stride, unsigned char *pred, int pred_stride);
-#define vp8_subtract_mby vp8_subtract_mby_c
+void vp8_subtract_mby_mmi(short *diff, unsigned char *src, int src_stride, unsigned char *pred, int pred_stride);
+#define vp8_subtract_mby vp8_subtract_mby_mmi
 
 void vp8_temporal_filter_apply_c(unsigned char *frame1, unsigned int stride, unsigned char *frame2, unsigned int block_size, int strength, int filter_weight, unsigned int *accumulator, unsigned short *count);
 #define vp8_temporal_filter_apply vp8_temporal_filter_apply_c
