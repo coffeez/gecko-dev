@@ -142,6 +142,182 @@ void vp8_subtract_mbuv_mmi(short *diff, unsigned char *usrc, unsigned char *vsrc
                            int src_stride, unsigned char *upred,
                            unsigned char *vpred, int pred_stride)
 {
+#if 1
+    short *udiff = diff + 256;
+    short *vdiff = diff + 320;
+    double ftmp[13];
+    uint32_t tmp[1];
+
+    __asm__ volatile (
+        "xor        %[ftmp0],   %[ftmp0],           %[ftmp0]        \n\t"
+
+        // u
+        "li         %[tmp0],    0x02                                \n\t"
+        "1:                                                         \n\t"
+        "gsldlc1    %[ftmp1],   0x07(%[usrc])                       \n\t"
+        "gsldrc1    %[ftmp1],   0x00(%[usrc])                       \n\t"
+        "gsldlc1    %[ftmp2],   0x07(%[upred])                      \n\t"
+        "gsldrc1    %[ftmp2],   0x00(%[upred])                      \n\t"
+        PTR_ADDU   "%[usrc],    %[usrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[upred],   %[upred],           %[pred_stride]  \n\t"
+        "gsldlc1    %[ftmp3],   0x07(%[usrc])                       \n\t"
+        "gsldrc1    %[ftmp3],   0x00(%[usrc])                       \n\t"
+        "gsldlc1    %[ftmp4],   0x07(%[upred])                      \n\t"
+        "gsldrc1    %[ftmp4],   0x00(%[upred])                      \n\t"
+        PTR_ADDU   "%[usrc],    %[usrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[upred],   %[upred],           %[pred_stride]  \n\t"
+        "gsldlc1    %[ftmp5],   0x07(%[usrc])                       \n\t"
+        "gsldrc1    %[ftmp5],   0x00(%[usrc])                       \n\t"
+        "gsldlc1    %[ftmp6],   0x07(%[upred])                      \n\t"
+        "gsldrc1    %[ftmp6],   0x00(%[upred])                      \n\t"
+        PTR_ADDU   "%[usrc],    %[usrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[upred],   %[upred],           %[pred_stride]  \n\t"
+        "gsldlc1    %[ftmp7],   0x07(%[usrc])                       \n\t"
+        "gsldrc1    %[ftmp7],   0x00(%[usrc])                       \n\t"
+        "gsldlc1    %[ftmp8],   0x07(%[upred])                      \n\t"
+        "gsldrc1    %[ftmp8],   0x00(%[upred])                      \n\t"
+        PTR_ADDU   "%[usrc],    %[usrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[upred],   %[upred],           %[pred_stride]  \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp1],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp1],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp2],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp2],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x07(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x00(%[udiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x0f(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x08(%[udiff])                      \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp3],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp3],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp4],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp4],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x17(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x10(%[udiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x1f(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x18(%[udiff])                      \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp5],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp5],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp6],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp6],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x27(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x20(%[udiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x2f(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x28(%[udiff])                      \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp7],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp7],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp8],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp8],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x37(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x30(%[udiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x3f(%[udiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x38(%[udiff])                      \n\t"
+
+        "addiu      %[tmp0],    %[tmp0],            -0x01           \n\t"
+        PTR_ADDIU  "%[udiff],   %[udiff],           0x40            \n\t"
+        "bnez       %[tmp0],    1b                                  \n\t"
+
+        // v
+        "li         %[tmp0],    0x02                                \n\t"
+        "2:                                                         \n\t"
+        "gsldlc1    %[ftmp1],   0x07(%[vsrc])                       \n\t"
+        "gsldrc1    %[ftmp1],   0x00(%[vsrc])                       \n\t"
+        "gsldlc1    %[ftmp2],   0x07(%[vpred])                      \n\t"
+        "gsldrc1    %[ftmp2],   0x00(%[vpred])                      \n\t"
+        PTR_ADDU   "%[vsrc],    %[vsrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[vpred],   %[vpred],           %[pred_stride]  \n\t"
+        "gsldlc1    %[ftmp3],   0x07(%[vsrc])                       \n\t"
+        "gsldrc1    %[ftmp3],   0x00(%[vsrc])                       \n\t"
+        "gsldlc1    %[ftmp4],   0x07(%[vpred])                      \n\t"
+        "gsldrc1    %[ftmp4],   0x00(%[vpred])                      \n\t"
+        PTR_ADDU   "%[vsrc],    %[vsrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[vpred],   %[vpred],           %[pred_stride]  \n\t"
+        "gsldlc1    %[ftmp5],   0x07(%[vsrc])                       \n\t"
+        "gsldrc1    %[ftmp5],   0x00(%[vsrc])                       \n\t"
+        "gsldlc1    %[ftmp6],   0x07(%[vpred])                      \n\t"
+        "gsldrc1    %[ftmp6],   0x00(%[vpred])                      \n\t"
+        PTR_ADDU   "%[vsrc],    %[vsrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[vpred],   %[vpred],           %[pred_stride]  \n\t"
+        "gsldlc1    %[ftmp7],   0x07(%[vsrc])                       \n\t"
+        "gsldrc1    %[ftmp7],   0x00(%[vsrc])                       \n\t"
+        "gsldlc1    %[ftmp8],   0x07(%[vpred])                      \n\t"
+        "gsldrc1    %[ftmp8],   0x00(%[vpred])                      \n\t"
+        PTR_ADDU   "%[vsrc],    %[vsrc],            %[src_stride]   \n\t"
+        PTR_ADDU   "%[vpred],   %[vpred],           %[pred_stride]  \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp1],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp1],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp2],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp2],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x07(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x00(%[vdiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x0f(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x08(%[vdiff])                      \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp3],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp3],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp4],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp4],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x17(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x10(%[vdiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x1f(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x18(%[vdiff])                      \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp5],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp5],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp6],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp6],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x27(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x20(%[vdiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x2f(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x28(%[vdiff])                      \n\t"
+
+        "punpcklbh  %[ftmp9],   %[ftmp7],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp10],  %[ftmp7],           %[ftmp0]        \n\t"
+        "punpcklbh  %[ftmp11],  %[ftmp8],           %[ftmp0]        \n\t"
+        "punpckhbh  %[ftmp12],  %[ftmp8],           %[ftmp0]        \n\t"
+        "psubh      %[ftmp9],   %[ftmp9],           %[ftmp11]       \n\t"
+        "psubh      %[ftmp10],  %[ftmp10],          %[ftmp12]       \n\t"
+        "gssdlc1    %[ftmp9],   0x37(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp9],   0x30(%[vdiff])                      \n\t"
+        "gssdlc1    %[ftmp10],  0x3f(%[vdiff])                      \n\t"
+        "gssdrc1    %[ftmp10],  0x38(%[vdiff])                      \n\t"
+
+        "addiu      %[tmp0],    %[tmp0],            -0x01           \n\t"
+        PTR_ADDIU  "%[vdiff],   %[vdiff],           0x40            \n\t"
+        "bnez       %[tmp0],    2b                                  \n\t"
+        : [ftmp0]"=&f"(ftmp[0]),            [ftmp1]"=&f"(ftmp[1]),
+          [ftmp2]"=&f"(ftmp[2]),            [ftmp3]"=&f"(ftmp[3]),
+          [ftmp4]"=&f"(ftmp[4]),            [ftmp5]"=&f"(ftmp[5]),
+          [ftmp6]"=&f"(ftmp[6]),            [ftmp7]"=&f"(ftmp[7]),
+          [ftmp8]"=&f"(ftmp[8]),            [ftmp9]"=&f"(ftmp[9]),
+          [ftmp10]"=&f"(ftmp[10]),          [ftmp11]"=&f"(ftmp[11]),
+          [ftmp12]"=&f"(ftmp[12]),
+          [tmp0]"=&r"(tmp[0]),
+          [usrc]"+&r"(usrc),                [upred]"+&r"(upred),
+          [vsrc]"+&r"(vsrc),                [vpred]"+&r"(vpred),
+          [udiff]"+&r"(udiff),              [vdiff]"+&r"(vdiff)
+        : [pred_stride]"r"((mips_reg)pred_stride),
+          [src_stride]"r"((mips_reg)src_stride)
+        : "memory"
+    );
+#else
     short *udiff = diff + 256;
     short *vdiff = diff + 320;
 
@@ -170,6 +346,7 @@ void vp8_subtract_mbuv_mmi(short *diff, unsigned char *usrc, unsigned char *vsrc
         vpred += pred_stride;
         vsrc  += src_stride;
     }
+#endif
 }
 
 void vp8_subtract_mby_mmi(short *diff, unsigned char *src, int src_stride,
