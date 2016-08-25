@@ -6,7 +6,6 @@
 
 CppUnitTests([
     'TestArrayUtils',
-    'TestAtomics',
     'TestBinarySearch',
     'TestBloomFilter',
     'TestBufferList',
