@@ -45,7 +45,7 @@ CPU_bitness = {
     'hppa': 32,
     'ia64': 64,
     'mips32': 32,
-    'mips64': 64,
+    'mips64': 32,
     'ppc': 32,
     'ppc64': 64,
     's390': 32,

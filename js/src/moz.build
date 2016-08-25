@@ -530,6 +530,9 @@ elif CONFIG['JS_CODEGEN_MIPS32'] or CONFIG['JS_CODEGEN_MIPS64']:
         'jit/mips-shared/MoveEmitter-mips-shared.cpp',
     ]
     if CONFIG['JS_CODEGEN_MIPS32']:
+        SOURCES += [
+            'jit/mips32/Atomic-fetch-add-8.S',
+        ]
         UNIFIED_SOURCES += [
             'jit/mips32/Architecture-mips32.cpp',
             'jit/mips32/Assembler-mips32.cpp',
