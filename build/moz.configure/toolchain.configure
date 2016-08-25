@@ -646,13 +646,6 @@ def compiler(language, host_or_target, c_compiler=None, other_compiler=None,
             info = check_compiler(wrapper + [compiler] + flags, language,
                                   host_or_target)
 
-        if not info.target_cpu or info.target_cpu != host_or_target.cpu:
-            raise FatalCheckError(
-                '%s %s compiler target CPU (%s) does not match --%s CPU (%s)'
-                % (host_or_target_str.capitalize(), language,
-                   info.target_cpu or 'unknown', host_or_target_str,
-                   host_or_target.raw_cpu))
-
         if not info.target_kernel or (info.target_kernel !=
                                       host_or_target.kernel):
             raise FatalCheckError(
@@ -765,14 +758,6 @@ host_cxx_compiler = compiler('C++', host, c_compiler=host_c_compiler,
                              other_c_compiler=c_compiler)
 
 include('compile-checks.configure')
-
-@depends(have_64_bit,
-         try_compile(body='static_assert(sizeof(void *) == 8, "")',
-                     check_msg='for 64-bit OS'))
-def check_have_64_bit(have_64_bit, compiler_have_64_bit):
-    if have_64_bit != compiler_have_64_bit:
-        configure_error('The target compiler does not agree with configure '
-                        'about the target bitness.')
 
 
 @depends(c_compiler)
