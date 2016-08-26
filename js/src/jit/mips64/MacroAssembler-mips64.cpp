@@ -1700,8 +1700,7 @@ MacroAssemblerMIPS64Compat::unboxNonDouble(const BaseIndex& src, Register dest)
 void
 MacroAssemblerMIPS64Compat::unboxInt32(const ValueOperand& operand, Register dest)
 {
-    ma_dsll(dest, operand.valueReg(), Imm32(32));
-    ma_dsra(dest, dest, Imm32(32));
+    ma_sll(dest, operand.valueReg(), Imm32(0));
 }
 
 void
@@ -1709,8 +1708,7 @@ MacroAssemblerMIPS64Compat::unboxInt32(const Operand& operand, Register dest)
 {
     switch(operand.getTag()) {
     case Operand::REG:
-        ma_dsll(dest, operand.toReg(), Imm32(32));
-        ma_dsra(dest, dest, Imm32(32));
+        ma_sll(dest, operand.toReg(), Imm32(0));
         break;
     case Operand::MEM:
         unboxInt32(operand.toAddress(), dest);
