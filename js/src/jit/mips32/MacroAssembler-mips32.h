@@ -1275,8 +1275,6 @@ class MacroAssemblerMIPSCompat : public MacroAssemblerMIPS
         moveToDoubleHi(zero, reg);
     }
 
-    void clampIntToUint8(Register reg);
-
     void subPtr(Imm32 imm, const Register dest);
     void subPtr(const Address& addr, const Register dest);
     void subPtr(Register src, const Address& dest);

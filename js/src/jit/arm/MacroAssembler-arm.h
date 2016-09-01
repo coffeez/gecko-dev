@@ -1645,15 +1645,6 @@ class MacroAssemblerARMCompat : public MacroAssemblerARM
     void atomicExchangeToTypedIntArray(Scalar::Type arrayType, const T& mem, Register value,
                                        Register temp, AnyRegister output);
 
-    void clampIntToUint8(Register reg) {
-        // Look at (reg >> 8) if it is 0, then reg shouldn't be clamped if it is
-        // <0, then we want to clamp to 0, otherwise, we wish to clamp to 255
-        ScratchRegisterScope scratch(asMasm());
-        as_mov(scratch, asr(reg, 8), SetCC);
-        ma_mov(Imm32(0xff), reg, LeaveCC, NotEqual);
-        ma_mov(Imm32(0), reg, LeaveCC, Signed);
-    }
-
     void incrementInt32Value(const Address& addr) {
         add32(Imm32(1), ToPayload(addr));
     }

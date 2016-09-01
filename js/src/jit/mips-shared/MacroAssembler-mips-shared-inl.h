@@ -112,6 +112,22 @@ MacroAssembler::sub32(const Address& src, Register dest)
     as_subu(dest, dest, SecondScratchReg);
 }
 
+// ===============================================================
+// Clamping functions.
+
+void
+MacroAssembler::clampIntToUint8(Register reg)
+{
+    // If reg is < 0, then we want to clamp to 0.
+    as_slti(ScratchRegister, reg, 0);
+    as_movn(reg, zero, ScratchRegister);
+
+    // If reg is >= 255, then we want to clamp to 255.
+    ma_li(SecondScratchReg, Imm32(255));
+    as_slti(ScratchRegister, reg, 255);
+    as_movz(reg, SecondScratchReg, ScratchRegister);
+}
+
 //}}} check_macroassembler_style
 // ===============================================================
 
