@@ -1259,14 +1259,502 @@ void vp8_mbloop_filter_horizontal_edge_mmi
 
 void vp8_mbloop_filter_vertical_edge_mmi
 (
+#if 1
+    unsigned char *src_ptr,
+    int  src_pixel_step,
+#else
     unsigned char *s,
     int p,
+#endif
     const unsigned char *blimit,
     const unsigned char *limit,
     const unsigned char *thresh,
     int count
 )
 {
+#if 1
+    mips_reg tmp[1];
+    mips_reg addr[2];
+    DECLARE_ALIGNED(8, const uint64_t, srct[10]);
+#if _MIPS_SIM == _ABIO32
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f2");
+    register double ftmp2 asm ("$f4");
+    register double ftmp3 asm ("$f6");
+    register double ftmp4 asm ("$f8");
+    register double ftmp5 asm ("$f10");
+    register double ftmp6 asm ("$f12");
+    register double ftmp7 asm ("$f14");
+    register double ftmp8 asm ("$f16");
+#else
+    register double ftmp0 asm ("$f0");
+    register double ftmp1 asm ("$f1");
+    register double ftmp2 asm ("$f2");
+    register double ftmp3 asm ("$f3");
+    register double ftmp4 asm ("$f4");
+    register double ftmp5 asm ("$f5");
+    register double ftmp6 asm ("$f6");
+    register double ftmp7 asm ("$f7");
+    register double ftmp8 asm ("$f8");
+#endif  // _MIPS_SIM == _ABIO32
+
+    __asm__ volatile (
+        PTR_SLL    "%[tmp0],    %[src_pixel_step],  0x02                \n\t"
+        PTR_ADDU   "%[src_ptr], %[src_ptr],         %[tmp0]             \n\t"
+        PTR_SUBU   "%[src_ptr], %[src_ptr],         0x04                \n\t"
+
+        "1:                                                             \n\t"
+        PTR_ADDU   "%[addr0],   %[src_ptr],         %[src_pixel_step]   \n\t"
+
+        PTR_ADDU   "%[addr1],   %[addr0],           %[src_pixel_step_x2]\n\t"
+        "gsldlc1    %[ftmp0],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp0],   0x00(%[addr1])                          \n\t"
+        PTR_ADDU   "%[addr1],   %[src_ptr],         %[src_pixel_step_x2]\n\t"
+        "gsldlc1    %[ftmp6],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp6],   0x00(%[addr1])                          \n\t"
+
+        "mov.d      %[ftmp7],   %[ftmp6]                                \n\t"
+        "punpckhbh  %[ftmp7],   %[ftmp7],           %[ftmp0]            \n\t"
+
+        "punpcklbh  %[ftmp6],   %[ftmp6],           %[ftmp0]            \n\t"
+        PTR_ADDU   "%[addr1],   %[src_ptr],         %[src_pixel_step]   \n\t"
+        "gsldlc1    %[ftmp0],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp0],   0x00(%[addr1])                          \n\t"
+
+        "gsldlc1    %[ftmp4],   0x07(%[src_ptr])                        \n\t"
+        "gsldrc1    %[ftmp4],   0x00(%[src_ptr])                        \n\t"
+        "mov.d      %[ftmp5],   %[ftmp4]                                \n\t"
+
+        "punpckhbh  %[ftmp5],   %[ftmp5],           %[ftmp0]            \n\t"
+        "punpcklbh  %[ftmp4],   %[ftmp4],           %[ftmp0]            \n\t"
+
+        "mov.d      %[ftmp3],   %[ftmp5]                                \n\t"
+        "punpckhhw  %[ftmp5],   %[ftmp5],           %[ftmp7]            \n\t"
+
+        "punpcklhw  %[ftmp3],   %[ftmp3],           %[ftmp7]            \n\t"
+        "mov.d      %[ftmp2],   %[ftmp4]                                \n\t"
+
+        "punpckhhw  %[ftmp4],   %[ftmp4],           %[ftmp6]            \n\t"
+        "punpcklhw  %[ftmp2],   %[ftmp2],           %[ftmp6]            \n\t"
+
+
+        PTR_SUBU   "%[addr1],   %[src_ptr],         %[src_pixel_step]   \n\t"
+        "gsldlc1    %[ftmp7],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp7],   0x00(%[addr1])                          \n\t"
+        PTR_SUBU   "%[addr1],   %[src_ptr],         %[src_pixel_step_x2]\n\t"
+        "gsldlc1    %[ftmp6],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp6],   0x00(%[addr1])                          \n\t"
+
+        "mov.d      %[ftmp1],   %[ftmp6]                                \n\t"
+        "punpckhbh  %[ftmp6],   %[ftmp6],           %[ftmp7]            \n\t"
+
+        "punpcklbh  %[ftmp1],   %[ftmp1],           %[ftmp7]            \n\t"
+
+        PTR_SLL    "%[tmp0],    %[src_pixel_step],  0x02                \n\t"
+        PTR_SUBU   "%[addr1],   %[src_ptr],         %[tmp0]             \n\t"
+        "gsldlc1    %[ftmp7],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp7],   0x00(%[addr1])                          \n\t"
+        PTR_SUBU   "%[addr1],   %[addr0],           %[tmp0]             \n\t"
+        "gsldlc1    %[ftmp8],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp8],   0x00(%[addr1])                          \n\t"
+        "punpckhbh  %[ftmp7],   %[ftmp7],           %[ftmp8]            \n\t"
+
+        "mov.d      %[ftmp0],   %[ftmp7]                                \n\t"
+        "punpckhhw  %[ftmp7],   %[ftmp7],           %[ftmp6]            \n\t"
+
+        "punpcklhw  %[ftmp0],   %[ftmp0],           %[ftmp6]            \n\t"
+        "mov.d      %[ftmp6],   %[ftmp7]                                \n\t"
+
+        "punpckhwd  %[ftmp7],   %[ftmp7],           %[ftmp5]            \n\t"
+        "punpcklwd  %[ftmp6],   %[ftmp6],           %[ftmp5]            \n\t"
+
+        "mov.d      %[ftmp5],   %[ftmp6]                                \n\t"
+
+        "sdc1       %[ftmp7],   0x38(%[srct])                           \n\t"
+        "psubusb    %[ftmp5],   %[ftmp5],           %[ftmp7]            \n\t"
+
+        "sdc1       %[ftmp6],   0x30(%[srct])                           \n\t"
+        "psubusb    %[ftmp7],   %[ftmp7],           %[ftmp6]            \n\t"
+
+        "or         %[ftmp7],   %[ftmp7],           %[ftmp5]            \n\t"
+        "mov.d      %[ftmp5],   %[ftmp0]                                \n\t"
+
+        "punpckhwd  %[ftmp5],   %[ftmp5],           %[ftmp3]            \n\t"
+        "punpcklwd  %[ftmp0],   %[ftmp0],           %[ftmp3]            \n\t"
+
+        "mov.d      %[ftmp3],   %[ftmp5]                                \n\t"
+        "psubusb    %[ftmp3],   %[ftmp3],           %[ftmp6]            \n\t"
+
+        "psubusb    %[ftmp6],   %[ftmp6],           %[ftmp5]            \n\t"
+        "or         %[ftmp6],   %[ftmp6],           %[ftmp3]            \n\t"
+
+        "sdc1       %[ftmp5],   0x28(%[srct])                           \n\t"
+        "sdc1       %[ftmp0],   0x20(%[srct])                           \n\t"
+
+        PTR_SLL    "%[tmp0],    %[src_pixel_step],  0x02                \n\t"
+        PTR_SUBU   "%[addr1],   %[src_ptr],         %[tmp0]             \n\t"
+        "gsldlc1    %[ftmp3],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp3],   0x00(%[addr1])                          \n\t"
+        PTR_SUBU   "%[addr1],   %[addr0],           %[tmp0]             \n\t"
+        "gsldlc1    %[ftmp8],   0x07(%[addr1])                          \n\t"
+        "gsldrc1    %[ftmp8],   0x00(%[addr1])                          \n\t"
+        "punpcklbh  %[ftmp3],   %[ftmp3],           %[ftmp8]            \n\t"
+
+        "mov.d      %[ftmp0],   %[ftmp3]                                \n\t"
+        "punpcklhw  %[ftmp0],   %[ftmp0],           %[ftmp1]            \n\t"
+
+        "punpckhhw  %[ftmp3],   %[ftmp3],           %[ftmp1]            \n\t"
+        "mov.d      %[ftmp1],   %[ftmp0]                                \n\t"
+
+        "punpcklwd  %[ftmp0],   %[ftmp0],           %[ftmp2]            \n\t"
+        "punpckhwd  %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+
+        "sdc1       %[ftmp0],   0x00(%[srct])                           \n\t"
+        "sdc1       %[ftmp1],   0x08(%[srct])                           \n\t"
+
+        "mov.d      %[ftmp2],   %[ftmp1]                                \n\t"
+        "psubusb    %[ftmp2],   %[ftmp2],           %[ftmp0]            \n\t"
+
+        "psubusb    %[ftmp0],   %[ftmp0],           %[ftmp1]            \n\t"
+        "or         %[ftmp0],   %[ftmp0],           %[ftmp2]            \n\t"
+
+        "mov.d      %[ftmp2],   %[ftmp3]                                \n\t"
+        "punpcklwd  %[ftmp2],   %[ftmp2],           %[ftmp4]            \n\t"
+
+        "punpckhwd  %[ftmp3],   %[ftmp3],           %[ftmp4]            \n\t"
+        "sdc1       %[ftmp3],   0x18(%[srct])                           \n\t"
+
+        "sdc1       %[ftmp2],   0x10(%[srct])                           \n\t"
+        "mov.d      %[ftmp5],   %[ftmp2]                                \n\t"
+
+        "psubusb    %[ftmp2],   %[ftmp2],           %[ftmp1]            \n\t"
+        "psubusb    %[ftmp1],   %[ftmp1],           %[ftmp5]            \n\t"
+
+        "or         %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+
+        "gsldlc1    %[ftmp4],   0x07(%[limit])                          \n\t"
+        "gsldrc1    %[ftmp4],   0x00(%[limit])                          \n\t"
+        "psubusb    %[ftmp7],   %[ftmp7],           %[ftmp4]            \n\t"
+
+        "psubusb    %[ftmp0],   %[ftmp0],           %[ftmp4]            \n\t"
+        "psubusb    %[ftmp1],   %[ftmp1],           %[ftmp4]            \n\t"
+
+        "psubusb    %[ftmp6],   %[ftmp6],           %[ftmp4]            \n\t"
+        "or         %[ftmp7],   %[ftmp7],           %[ftmp6]            \n\t"
+
+        "or         %[ftmp0],   %[ftmp0],           %[ftmp1]            \n\t"
+        "or         %[ftmp0],   %[ftmp0],           %[ftmp7]            \n\t"
+
+        "mov.d      %[ftmp1],   %[ftmp5]                                \n\t"
+
+        "mov.d      %[ftmp7],   %[ftmp3]                                \n\t"
+        "psubusb    %[ftmp7],   %[ftmp7],           %[ftmp5]            \n\t"
+
+        "psubusb    %[ftmp5],   %[ftmp5],           %[ftmp3]            \n\t"
+        "or         %[ftmp5],   %[ftmp5],           %[ftmp7]            \n\t"
+
+        "sdc1       %[ftmp5],   0x40(%[srct])                           \n\t"
+
+        "psubusb    %[ftmp5],   %[ftmp5],           %[ftmp4]            \n\t"
+        "or         %[ftmp0],   %[ftmp0],           %[ftmp5]            \n\t"
+
+        "ldc1       %[ftmp5],   0x20(%[srct])                           \n\t"
+        "ldc1       %[ftmp7],   0x28(%[srct])                           \n\t"
+
+        "mov.d      %[ftmp6],   %[ftmp5]                                \n\t"
+        "mov.d      %[ftmp2],   %[ftmp7]                                \n\t"
+        "psubusb    %[ftmp5],   %[ftmp5],           %[ftmp7]            \n\t"
+
+        "psubusb    %[ftmp7],   %[ftmp7],           %[ftmp6]            \n\t"
+        "or         %[ftmp7],   %[ftmp7],           %[ftmp5]            \n\t"
+
+        "sdc1       %[ftmp7],   0x48(%[srct])                           \n\t"
+        "psubusb    %[ftmp7],   %[ftmp7],           %[ftmp4]            \n\t"
+
+        "or         %[ftmp0],   %[ftmp0],           %[ftmp7]            \n\t"
+
+        "mov.d      %[ftmp5],   %[ftmp2]                                \n\t"
+        "psubusb    %[ftmp5],   %[ftmp5],           %[ftmp1]            \n\t"
+        "psubusb    %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+        "or         %[ftmp5],   %[ftmp5],           %[ftmp1]            \n\t"
+        "and        %[ftmp5],   %[ftmp5],           %[ff_pb_fe]         \n\t"
+        "li         %[tmp0],    0x01                                    \n\t"
+        "mtc1       %[tmp0],    %[ftmp8]                                \n\t"
+        "psrlh      %[ftmp5],   %[ftmp5],           %[ftmp8]            \n\t"
+
+        "gsldlc1    %[ftmp4],   0x07(%[blimit])                         \n\t"
+        "gsldrc1    %[ftmp4],   0x00(%[blimit])                         \n\t"
+        "mov.d      %[ftmp1],   %[ftmp3]                                \n\t"
+
+        "mov.d      %[ftmp7],   %[ftmp6]                                \n\t"
+        "psubusb    %[ftmp1],   %[ftmp1],           %[ftmp7]            \n\t"
+
+        "psubusb    %[ftmp7],   %[ftmp7],           %[ftmp3]            \n\t"
+        "or         %[ftmp1],   %[ftmp1],           %[ftmp7]            \n\t"
+        "paddusb    %[ftmp1],   %[ftmp1],           %[ftmp1]            \n\t"
+        "paddusb    %[ftmp1],   %[ftmp1],           %[ftmp5]            \n\t"
+
+        "psubusb    %[ftmp1],   %[ftmp1],           %[ftmp4]            \n\t"
+        "or         %[ftmp1],   %[ftmp1],           %[ftmp0]            \n\t"
+
+        "xor        %[ftmp0],   %[ftmp0],           %[ftmp0]            \n\t"
+        "pcmpeqb    %[ftmp1],   %[ftmp1],           %[ftmp0]            \n\t"
+
+        "gsldlc1    %[ftmp7],   0x07(%[thresh])                         \n\t"
+        "gsldrc1    %[ftmp7],   0x00(%[thresh])                         \n\t"
+        "ldc1       %[ftmp4],   0x40(%[srct])                           \n\t"
+        "psubusb    %[ftmp4],   %[ftmp4],           %[ftmp7]            \n\t"
+
+        "ldc1       %[ftmp3],   0x48(%[srct])                           \n\t"
+        "psubusb    %[ftmp3],   %[ftmp3],           %[ftmp7]            \n\t"
+
+        "or         %[ftmp4],   %[ftmp4],           %[ftmp3]            \n\t"
+        "pcmpeqb    %[ftmp4],   %[ftmp4],           %[ftmp0]            \n\t"
+
+        "pcmpeqb    %[ftmp0],   %[ftmp0],           %[ftmp0]            \n\t"
+        "xor        %[ftmp4],   %[ftmp4],           %[ftmp0]            \n\t"
+
+
+        "ldc1       %[ftmp2],   0x10(%[srct])                           \n\t"
+        "ldc1       %[ftmp7],   0x28(%[srct])                           \n\t"
+        "xor        %[ftmp2],   %[ftmp2],           %[ff_pb_80]         \n\t"
+        "xor        %[ftmp7],   %[ftmp7],           %[ff_pb_80]         \n\t"
+        "psubsb     %[ftmp2],   %[ftmp2],           %[ftmp7]            \n\t"
+
+        "ldc1       %[ftmp6],   0x18(%[srct])                           \n\t"
+        "ldc1       %[ftmp0],   0x20(%[srct])                           \n\t"
+        "xor        %[ftmp6],   %[ftmp6],           %[ff_pb_80]         \n\t"
+        "xor        %[ftmp0],   %[ftmp0],           %[ff_pb_80]         \n\t"
+
+        "mov.d      %[ftmp3],   %[ftmp0]                                \n\t"
+        "psubsb     %[ftmp0],   %[ftmp0],           %[ftmp6]            \n\t"
+        "paddsb     %[ftmp2],   %[ftmp2],           %[ftmp0]            \n\t"
+        "paddsb     %[ftmp2],   %[ftmp2],           %[ftmp0]            \n\t"
+        "paddsb     %[ftmp2],   %[ftmp2],           %[ftmp0]            \n\t"
+        "and        %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+
+        "mov.d      %[ftmp2],   %[ftmp1]                                \n\t"
+        "and        %[ftmp2],   %[ftmp2],           %[ftmp4]            \n\t"
+
+        "mov.d      %[ftmp5],   %[ftmp2]                                \n\t"
+        "paddsb     %[ftmp5],   %[ftmp5],           %[ff_pb_03]         \n\t"
+
+        "xor        %[ftmp0],   %[ftmp0],           %[ftmp0]            \n\t"
+        "xor        %[ftmp7],   %[ftmp7],           %[ftmp7]            \n\t"
+
+        "li         %[tmp0],    0x0b                                    \n\t"
+        "mtc1       %[tmp0],    %[ftmp8]                                \n\t"
+        "punpcklbh  %[ftmp0],   %[ftmp0],           %[ftmp5]            \n\t"
+        "psrah      %[ftmp0],   %[ftmp0],           %[ftmp8]            \n\t"
+        "punpckhbh  %[ftmp7],   %[ftmp7],           %[ftmp5]            \n\t"
+        "psrah      %[ftmp7],   %[ftmp7],           %[ftmp8]            \n\t"
+        "packsshb   %[ftmp0],   %[ftmp0],           %[ftmp7]            \n\t"
+
+        "mov.d      %[ftmp5],   %[ftmp0]                                \n\t"
+
+        "paddsb     %[ftmp2],   %[ftmp2],           %[ff_pb_04]         \n\t"
+        "xor        %[ftmp0],   %[ftmp0],           %[ftmp0]            \n\t"
+        "xor        %[ftmp7],   %[ftmp7],           %[ftmp7]            \n\t"
+
+        "punpcklbh  %[ftmp0],   %[ftmp0],           %[ftmp2]            \n\t"
+        "psrah      %[ftmp0],   %[ftmp0],           %[ftmp8]            \n\t"
+        "punpckhbh  %[ftmp7],   %[ftmp7],           %[ftmp2]            \n\t"
+        "psrah      %[ftmp7],   %[ftmp7],           %[ftmp8]            \n\t"
+        "packsshb   %[ftmp0],   %[ftmp0],           %[ftmp7]            \n\t"
+
+        "psubsb     %[ftmp3],   %[ftmp3],           %[ftmp0]            \n\t"
+        "paddsb     %[ftmp6],   %[ftmp6],           %[ftmp5]            \n\t"
+
+        "pandn      %[ftmp4],   %[ftmp4],           %[ftmp1]            \n\t"
+
+
+        "xor        %[ftmp0],   %[ftmp0],           %[ftmp0]            \n\t"
+
+        "li         %[tmp0],    0x07                                    \n\t"
+        "mtc1       %[tmp0],    %[ftmp8]                                \n\t"
+        "xor        %[ftmp1],   %[ftmp1],           %[ftmp1]            \n\t"
+        "xor        %[ftmp2],   %[ftmp2],           %[ftmp2]            \n\t"
+        "punpcklbh  %[ftmp1],   %[ftmp1],           %[ftmp4]            \n\t"
+        "punpckhbh  %[ftmp2],   %[ftmp2],           %[ftmp4]            \n\t"
+        "pmulhh     %[ftmp1],   %[ftmp1],           %[ff_ph_1b00]       \n\t"
+        "pmulhh     %[ftmp2],   %[ftmp2],           %[ff_ph_1b00]       \n\t"
+        "paddh      %[ftmp1],   %[ftmp1],           %[ff_ph_003f]       \n\t"
+        "paddh      %[ftmp2],   %[ftmp2],           %[ff_ph_003f]       \n\t"
+        "psrah      %[ftmp1],   %[ftmp1],           %[ftmp8]            \n\t"
+        "psrah      %[ftmp2],   %[ftmp2],           %[ftmp8]            \n\t"
+        "packsshb   %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+
+        "psubsb     %[ftmp3],   %[ftmp3],           %[ftmp1]            \n\t"
+        "paddsb     %[ftmp6],   %[ftmp6],           %[ftmp1]            \n\t"
+
+        "xor        %[ftmp3],   %[ftmp3],           %[ff_pb_80]         \n\t"
+        "xor        %[ftmp6],   %[ftmp6],           %[ff_pb_80]         \n\t"
+        "sdc1       %[ftmp6],   0x18(%[srct])                           \n\t"
+        "sdc1       %[ftmp3],   0x20(%[srct])                           \n\t"
+
+        "xor        %[ftmp1],   %[ftmp1],           %[ftmp1]            \n\t"
+        "xor        %[ftmp2],   %[ftmp2],           %[ftmp2]            \n\t"
+        "punpcklbh  %[ftmp1],   %[ftmp1],           %[ftmp4]            \n\t"
+        "punpckhbh  %[ftmp2],   %[ftmp2],           %[ftmp4]            \n\t"
+        "pmulhh     %[ftmp1],   %[ftmp1],           %[ff_ph_1200]       \n\t"
+        "pmulhh     %[ftmp2],   %[ftmp2],           %[ff_ph_1200]       \n\t"
+        "paddh      %[ftmp1],   %[ftmp1],           %[ff_ph_003f]       \n\t"
+        "paddh      %[ftmp2],   %[ftmp2],           %[ff_ph_003f]       \n\t"
+        "psrah      %[ftmp1],   %[ftmp1],           %[ftmp8]            \n\t"
+        "psrah      %[ftmp2],   %[ftmp2],           %[ftmp8]            \n\t"
+        "packsshb   %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+
+        "ldc1       %[ftmp3],   0x28(%[srct])                           \n\t"
+        "ldc1       %[ftmp6],   0x10(%[srct])                           \n\t"
+        "xor        %[ftmp3],   %[ftmp3],           %[ff_pb_80]         \n\t"
+        "xor        %[ftmp6],   %[ftmp6],           %[ff_pb_80]         \n\t"
+
+        "paddsb     %[ftmp6],   %[ftmp6],           %[ftmp1]            \n\t"
+        "psubsb     %[ftmp3],   %[ftmp3],           %[ftmp1]            \n\t"
+
+        "xor        %[ftmp6],   %[ftmp6],           %[ff_pb_80]         \n\t"
+        "xor        %[ftmp3],   %[ftmp3],           %[ff_pb_80]         \n\t"
+        "sdc1       %[ftmp3],   0x28(%[srct])                           \n\t"
+        "sdc1       %[ftmp6],   0x10(%[srct])                           \n\t"
+
+        "xor        %[ftmp1],   %[ftmp1],           %[ftmp1]            \n\t"
+        "xor        %[ftmp2],   %[ftmp2],           %[ftmp2]            \n\t"
+        "punpcklbh  %[ftmp1],   %[ftmp1],           %[ftmp4]            \n\t"
+        "punpckhbh  %[ftmp2],   %[ftmp2],           %[ftmp4]            \n\t"
+        "pmulhh     %[ftmp1],   %[ftmp1],           %[ff_ph_0900]       \n\t"
+        "pmulhh     %[ftmp2],   %[ftmp2],           %[ff_ph_0900]       \n\t"
+        "paddh      %[ftmp1],   %[ftmp1],           %[ff_ph_003f]       \n\t"
+        "paddh      %[ftmp2],   %[ftmp2],           %[ff_ph_003f]       \n\t"
+        "psrah      %[ftmp1],   %[ftmp1],           %[ftmp8]            \n\t"
+        "psrah      %[ftmp2],   %[ftmp2],           %[ftmp8]            \n\t"
+        "packsshb   %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+
+        "ldc1       %[ftmp6],   0x08(%[srct])                           \n\t"
+        "ldc1       %[ftmp3],   0x30(%[srct])                           \n\t"
+
+        "xor        %[ftmp6],   %[ftmp6],           %[ff_pb_80]         \n\t"
+        "xor        %[ftmp3],   %[ftmp3],           %[ff_pb_80]         \n\t"
+
+        "paddsb     %[ftmp6],   %[ftmp6],           %[ftmp1]            \n\t"
+        "psubsb     %[ftmp3],   %[ftmp3],           %[ftmp1]            \n\t"
+
+        "xor        %[ftmp6],   %[ftmp6],           %[ff_pb_80]         \n\t"
+        "xor        %[ftmp3],   %[ftmp3],           %[ff_pb_80]         \n\t"
+
+        "ldc1       %[ftmp0],   0x00(%[srct])                           \n\t"
+        "mov.d      %[ftmp1],   %[ftmp0]                                \n\t"
+
+        "punpcklbh  %[ftmp0],   %[ftmp0],           %[ftmp6]            \n\t"
+        "punpckhbh  %[ftmp1],   %[ftmp1],           %[ftmp6]            \n\t"
+
+        "ldc1       %[ftmp2],   0x10(%[srct])                           \n\t"
+        "mov.d      %[ftmp6],   %[ftmp2]                                \n\t"
+
+        "ldc1       %[ftmp8],   0x18(%[srct])                           \n\t"
+        "punpcklbh  %[ftmp2],   %[ftmp2],           %[ftmp8]            \n\t"
+        "punpckhbh  %[ftmp6],   %[ftmp6],           %[ftmp8]            \n\t"
+
+        "mov.d      %[ftmp5],   %[ftmp0]                                \n\t"
+        "punpcklhw  %[ftmp0],   %[ftmp0],           %[ftmp2]            \n\t"
+
+        "punpckhhw  %[ftmp5],   %[ftmp5],           %[ftmp2]            \n\t"
+        "mov.d      %[ftmp4],   %[ftmp1]                                \n\t"
+
+        "punpcklhw  %[ftmp1],   %[ftmp1],           %[ftmp6]            \n\t"
+        "punpckhhw  %[ftmp4],   %[ftmp4],           %[ftmp6]            \n\t"
+
+        "ldc1       %[ftmp2],   0x20(%[srct])                           \n\t"
+        "ldc1       %[ftmp8],   0x28(%[srct])                           \n\t"
+        "punpcklbh  %[ftmp2],   %[ftmp2],           %[ftmp8]            \n\t"
+
+        "mov.d      %[ftmp6],   %[ftmp3]                                \n\t"
+        "ldc1       %[ftmp8],   0x38(%[srct])                           \n\t"
+        "punpcklbh  %[ftmp6],   %[ftmp6],           %[ftmp8]            \n\t"
+
+        "mov.d      %[ftmp7],   %[ftmp2]                                \n\t"
+        "punpcklhw  %[ftmp2],   %[ftmp2],           %[ftmp6]            \n\t"
+
+        "punpckhhw  %[ftmp7],   %[ftmp7],           %[ftmp6]            \n\t"
+        "mov.d      %[ftmp6],   %[ftmp0]                                \n\t"
+
+        "punpcklwd  %[ftmp0],   %[ftmp0],           %[ftmp2]            \n\t"
+        "punpckhwd  %[ftmp6],   %[ftmp6],           %[ftmp2]            \n\t"
+
+        PTR_SLL    "%[tmp0],    %[src_pixel_step],  0x02                \n\t"
+        PTR_SUBU   "%[addr1],   %[src_ptr],         %[tmp0]             \n\t"
+        "gssdlc1    %[ftmp0],   0x07(%[addr1])                          \n\t"
+        "gssdrc1    %[ftmp0],   0x00(%[addr1])                          \n\t"
+        PTR_SUBU   "%[addr1],   %[addr0],           %[tmp0]             \n\t"
+        "gssdlc1    %[ftmp6],   0x07(%[addr1])                          \n\t"
+        "gssdrc1    %[ftmp6],   0x00(%[addr1])                          \n\t"
+
+        "mov.d      %[ftmp0],   %[ftmp5]                                \n\t"
+        "punpcklwd  %[ftmp0],   %[ftmp0],           %[ftmp7]            \n\t"
+
+        "punpckhwd  %[ftmp5],   %[ftmp5],           %[ftmp7]            \n\t"
+        PTR_SUBU   "%[addr1],   %[src_ptr],         %[src_pixel_step_x2]\n\t"
+        "gssdlc1    %[ftmp0],   0x07(%[addr1])                          \n\t"
+        "gssdrc1    %[ftmp0],   0x00(%[addr1])                          \n\t"
+
+        PTR_SUBU   "%[addr1],   %[addr0],           %[src_pixel_step_x2]\n\t"
+        "gssdlc1    %[ftmp5],   0x07(%[addr1])                          \n\t"
+        "gssdrc1    %[ftmp5],   0x00(%[addr1])                          \n\t"
+        "ldc1       %[ftmp2],   0x20(%[srct])                           \n\t"
+
+        "ldc1       %[ftmp8],   0x28(%[srct])                           \n\t"
+        "punpckhbh  %[ftmp2],   %[ftmp2],           %[ftmp8]            \n\t"
+        "ldc1       %[ftmp8],   0x38(%[srct])                           \n\t"
+        "punpckhbh  %[ftmp3],   %[ftmp3],           %[ftmp8]            \n\t"
+
+        "mov.d      %[ftmp5],   %[ftmp2]                                \n\t"
+        "punpcklhw  %[ftmp2],   %[ftmp2],           %[ftmp3]            \n\t"
+
+        "punpckhhw  %[ftmp5],   %[ftmp5],           %[ftmp3]            \n\t"
+        "mov.d      %[ftmp0],   %[ftmp1]                                \n\t"
+
+        "mov.d      %[ftmp3],   %[ftmp4]                                \n\t"
+        "punpcklwd  %[ftmp0],   %[ftmp0],           %[ftmp2]            \n\t"
+
+        "punpckhwd  %[ftmp1],   %[ftmp1],           %[ftmp2]            \n\t"
+        "gssdlc1    %[ftmp0],   0x07(%[src_ptr])                        \n\t"
+        "gssdrc1    %[ftmp0],   0x00(%[src_ptr])                        \n\t"
+
+        "gssdlc1    %[ftmp1],   0x07(%[addr0])                          \n\t"
+        "gssdrc1    %[ftmp1],   0x00(%[addr0])                          \n\t"
+
+        "punpcklwd  %[ftmp3],   %[ftmp3],           %[ftmp5]            \n\t"
+        "punpckhwd  %[ftmp4],   %[ftmp4],           %[ftmp5]            \n\t"
+
+        PTR_ADDU   "%[addr1],   %[src_ptr],         %[src_pixel_step_x2]\n\t"
+        "gssdlc1    %[ftmp3],   0x07(%[addr1])                          \n\t"
+        "gssdrc1    %[ftmp3],   0x00(%[addr1])                          \n\t"
+        PTR_ADDU   "%[addr1],   %[addr0],           %[src_pixel_step_x2]\n\t"
+        "gssdlc1    %[ftmp4],   0x07(%[addr1])                          \n\t"
+        "gssdrc1    %[ftmp4],   0x00(%[addr1])                          \n\t"
+
+        "addiu      %[count],   %[count],           -0x01               \n\t"
+        PTR_SLL    "%[tmp0],    %[src_pixel_step],  0x03                \n\t"
+        PTR_ADDU   "%[src_ptr], %[src_ptr],         %[tmp0]             \n\t"
+        "bnez       %[count],   1b                                      \n\t"
+        : [ftmp0]"=&f"(ftmp0),              [ftmp1]"=&f"(ftmp1),
+          [ftmp2]"=&f"(ftmp2),              [ftmp3]"=&f"(ftmp3),
+          [ftmp4]"=&f"(ftmp4),              [ftmp5]"=&f"(ftmp5),
+          [ftmp6]"=&f"(ftmp6),              [ftmp7]"=&f"(ftmp7),
+          [ftmp8]"=&f"(ftmp8),
+          [tmp0]"=&r"(tmp[0]),
+          [addr0]"=&r"(addr[0]),            [addr1]"=&r"(addr[1]),
+          [src_ptr]"+&r"(src_ptr),          [count]"+&r"(count)
+        : [limit]"r"(limit),                [blimit]"r"(blimit),
+          [srct]"r"(srct),                  [thresh]"r"(thresh),
+          [src_pixel_step]"r"((mips_reg)src_pixel_step),
+          [src_pixel_step_x2]"r"((mips_reg)(src_pixel_step<<1)),
+          [ff_pb_fe]"f"(ff_pb_fe),          [ff_pb_80]"f"(ff_pb_80),
+          [ff_pb_04]"f"(ff_pb_04),          [ff_pb_03]"f"(ff_pb_03),
+          [ff_ph_0900]"f"(ff_ph_0900),      [ff_ph_1b00]"f"(ff_ph_1b00),
+          [ff_ph_1200]"f"(ff_ph_1200),      [ff_ph_003f]"f"(ff_ph_003f)
+        : "memory"
+    );
+#else
     signed char hev = 0; /* high edge variance */
     signed char mask = 0;
     int i = 0;
@@ -1284,7 +1772,7 @@ void vp8_mbloop_filter_vertical_edge_mmi
         s += p;
     }
     while (++i < count * 8);
-
+#endif
 }
 
 void vp8_loop_filter_simple_horizontal_edge_mmi
