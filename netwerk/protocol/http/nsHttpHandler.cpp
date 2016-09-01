@@ -57,6 +57,7 @@
 #include "mozilla/net/NeckoChild.h"
 #include "mozilla/ipc/URIUtils.h"
 #include "mozilla/Telemetry.h"
+#include "mozilla/mips.h"
 
 #if defined(XP_UNIX)
 #include <sys/utsname.h>
@@ -882,6 +883,9 @@ nsHttpHandler::InitUserAgentComponents()
             buf += (char*)name.release;
 #else
             buf += (char*)name.machine;
+
+            if (is_loongson())
+                buf += "-loongson";
 #endif
         }
 
