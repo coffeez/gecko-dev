@@ -24,6 +24,13 @@ namespace mozilla {
 #endif
   }
 
+  inline bool is_loongson() {
+#ifdef __mips__
+    return mips_private::isLoongson3;
+#else
+    return false;
+#endif
+  }
 } // namespace mozilla
 
 #endif /* !defined(mozilla_mips_h_) */
