@@ -112,6 +112,25 @@ MacroAssembler::sub32(const Address& src, Register dest)
     subl(Operand(src), dest);
 }
 
+// ===============================================================
+// Clamping functions
+
+void
+MacroAssembler::clampIntToUint8(Register reg)
+{
+    Label inRange;
+    branchTest32(Assembler::Zero, reg, Imm32(0xffffff00), &inRange);
+    {
+        sarl(Imm32(31), reg);
+        notl(reg);
+        andl(Imm32(255), reg);
+    }
+    bind(&inRange);
+}
+
+//}}} check_macroassembler_style
+// ===============================================================
+
 //}}} check_macroassembler_style
 // ===============================================================
 

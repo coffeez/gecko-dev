@@ -1357,17 +1357,6 @@ class MacroAssemblerX86Shared : public Assembler
         j(Assembler::NotEqual, fail);
     }
 
-    void clampIntToUint8(Register reg) {
-        Label inRange;
-        branchTest32(Assembler::Zero, reg, Imm32(0xffffff00), &inRange);
-        {
-            sarl(Imm32(31), reg);
-            notl(reg);
-            andl(Imm32(255), reg);
-        }
-        bind(&inRange);
-    }
-
     bool maybeInlineDouble(double d, FloatRegister dest) {
         uint64_t u = mozilla::BitwiseCast<uint64_t>(d);
 

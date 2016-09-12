@@ -360,8 +360,6 @@ class MacroAssemblerNone : public Assembler
     template <typename T, typename S> void atomicXor16(const T& value, const S& mem) { MOZ_CRASH(); }
     template <typename T, typename S> void atomicXor32(const T& value, const S& mem) { MOZ_CRASH(); }
 
-    void clampIntToUint8(Register) { MOZ_CRASH(); }
-
     Register splitTagForTest(ValueOperand) { MOZ_CRASH(); }
 
     template <typename T> void branchTestUndefined(Condition, T, Label*) { MOZ_CRASH(); }
