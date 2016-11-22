@@ -2212,7 +2212,7 @@
           '-Wsign-compare',
         ],
         'ldflags': [
-          '-pthread', '-Wl,-z,noexecstack',
+          '-pthread',
         ],
         'libraries' : [
           '<(libraries_for_target)',
@@ -2775,7 +2775,6 @@
               '-fstack-protector',
               '-fno-short-enums',
               '-finline-limit=64',
-              '-Wa,--noexecstack',
               '<@(release_extra_cflags)',
             ],
             'ldflags!': [
@@ -2984,7 +2983,6 @@
             ],
             'ldflags!': [
               '-faddress-sanitizer',
-              '-Wl,-z,noexecstack',
               '-Wl,--gc-sections',
               '-Wl,-O1',
               '-Wl,--as-needed',

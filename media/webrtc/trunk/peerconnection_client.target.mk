@@ -220,7 +220,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 ### Rules for final target.
 LDFLAGS_Debug := \
 	-pthread \
-	-Wl,-z,noexecstack \
 	-fPIC \
 	-Wl,--threads \
 	-Wl,--thread-count=4 \
@@ -229,7 +228,6 @@ LDFLAGS_Debug := \
 
 LDFLAGS_Release := \
 	-pthread \
-	-Wl,-z,noexecstack \
 	-fPIC \
 	-Wl,--threads \
 	-Wl,--thread-count=4 \

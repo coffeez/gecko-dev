@@ -133,12 +133,10 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 # End of this set of suffix rules
 ### Rules for final target.
 LDFLAGS_Debug := -pthread \
-	-Wl,-z,noexecstack \
 	-fPIC \
 	-B$(builddir)/../../third_party/gold
 
 LDFLAGS_Release := -pthread \
-	-Wl,-z,noexecstack \
 	-fPIC \
 	-B$(builddir)/../../third_party/gold \
 	-Wl,-O1 \

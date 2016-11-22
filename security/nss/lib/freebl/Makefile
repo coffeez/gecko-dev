@@ -215,7 +215,7 @@ endif # Darwin
 ifeq ($(OS_TARGET),Linux)
 ifeq ($(CPU_ARCH),x86_64)
     ASFILES  = arcfour-amd64-gas.s mpi_amd64_gas.s
-    ASFLAGS += -fPIC -Wa,--noexecstack
+    ASFLAGS += -fPIC
     DEFINES += -DNSS_BEVAND_ARCFOUR -DMPI_AMD64 -DMP_ASSEMBLY_MULTIPLY
     DEFINES += -DNSS_USE_COMBA
     DEFINES += -DMP_IS_LITTLE_ENDIAN
