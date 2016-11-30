@@ -1103,7 +1103,7 @@ int VP8DecoderImpl::InitDecode(const VideoCodec* inst,
   cfg.h = cfg.w = 0;  // set after decode
 
 vpx_codec_flags_t flags = 0;
-#ifndef WEBRTC_ARCH_ARM
+#if !defined(WEBRTC_ARCH_ARM) && !defined(WEBRTC_ARCH_MIPS)
   flags = VPX_CODEC_USE_POSTPROC;
 #ifdef INDEPENDENT_PARTITIONS
   flags |= VPX_CODEC_USE_INPUT_PARTITION;
@@ -1150,7 +1150,7 @@ int VP8DecoderImpl::Decode(const EncodedImage& input_image,
   }
 #endif
 
-#ifndef WEBRTC_ARCH_ARM
+#if !defined(WEBRTC_ARCH_ARM) && !defined(WEBRTC_ARCH_MIPS)
   vp8_postproc_cfg_t ppcfg;
   // MFQE enabled to reduce key frame popping.
   ppcfg.post_proc_flag = VP8_MFQE | VP8_DEBLOCK;
