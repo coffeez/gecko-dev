@@ -2465,6 +2465,7 @@ VPX_ASFLAGS=
 VPX_AS_CONVERSION=
 VPX_X86_ASM=
 VPX_ARM_ASM=
+VPX_LOONGSON_ASM=
 LIBJPEG_TURBO_AS=
 LIBJPEG_TURBO_ASFLAGS=
 MOZ_PERMISSIONS=1
@@ -3490,6 +3491,12 @@ if test -z "$MOZ_SYSTEM_LIBVPX"; then
 
     dnl See if we have assembly on this platform.
     case "$OS_ARCH:$CPU_ARCH" in
+    Linux:mips*)
+#ifdef _MIPS_ARCH_LOONGSON3A
+      VPX_ASFLAGS="-march=loongson3a"
+      VPX_LOONGSON_ASM=1
+#endif
+    ;;
     Darwin:x86)
       VPX_USE_YASM=1
       VPX_X86_ASM=1
@@ -3566,6 +3573,8 @@ if test -z "$MOZ_SYSTEM_LIBVPX"; then
       AC_DEFINE(VPX_X86_ASM)
     elif test -n "$VPX_ARM_ASM"; then
       AC_DEFINE(VPX_ARM_ASM)
+    elif test -n "$VPX_LOONGSON_ASM"; then
+      AC_DEFINE(VPX_LOONGSON_ASM)
     else
       AC_MSG_WARN([No assembler or assembly support for libvpx. Using unoptimized C routines.])
     fi
@@ -6479,6 +6488,7 @@ AC_SUBST_LIST(VPX_ASFLAGS)
 AC_SUBST(VPX_AS_CONVERSION)
 AC_SUBST(VPX_X86_ASM)
 AC_SUBST(VPX_ARM_ASM)
+AC_SUBST(VPX_LOONGSON_ASM)
 AC_SUBST(MOZ_CODE_COVERAGE)
 AC_SUBST(LIBJPEG_TURBO_USE_YASM)
 AC_SUBST_LIST(LIBJPEG_TURBO_ASFLAGS)
