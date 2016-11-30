@@ -671,7 +671,7 @@ int VP8EncoderImpl::InitAndSetControlSettings() {
   // when encoding lower resolution streams. Would it work with the
   // multi-res encoding feature?
   denoiserState denoiser_state = kDenoiserOnYOnly;
-#ifdef WEBRTC_ARCH_ARM
+#if defined(WEBRTC_ARCH_ARM) || defined(WEBRTC_ARCH_MIPS)
   denoiser_state = kDenoiserOnYOnly;
 #else
   denoiser_state = kDenoiserOnAdaptive;
