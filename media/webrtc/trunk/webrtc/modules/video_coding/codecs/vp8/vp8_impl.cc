@@ -611,7 +611,7 @@ int VP8EncoderImpl::InitEncode(const VideoCodec* inst,
 }
 
 int VP8EncoderImpl::SetCpuSpeed(int width, int height) {
-#if defined(WEBRTC_ARCH_ARM)
+#if defined(WEBRTC_ARCH_ARM) || defined(WEBRTC_ARCH_MIPS)
   // On mobile platform, always set to -12 to leverage between cpu usage
   // and video quality.
   return -12;
