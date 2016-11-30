@@ -42,6 +42,10 @@
 /* Android */
 #include "vp8_rtcd_armv7-android-gcc.h"
 
+#elif defined(VPX_LOONGSON_ASM)
+/* Loongson platforms. */
+#include "vp8_rtcd_loongson-linux-gcc.h"
+
 #else
 /* Assume generic GNU/GCC configuration. */
 #include "vp8_rtcd_generic-gnu.h"
