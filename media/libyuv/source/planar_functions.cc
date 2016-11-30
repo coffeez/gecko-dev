@@ -331,6 +331,11 @@ int YUY2ToI422(const uint8* src_yuy2, int src_stride_yuy2,
     }
   }
 #endif
+#if defined(HAS_YUY2TOYROW_MMI)
+  if (width >= 8) {
+    YUY2ToYRow = YUY2ToYRow_MMI;
+  }
+#endif
 
   for (y = 0; y < height; ++y) {
     YUY2ToUV422Row(src_yuy2, dst_u, dst_v, width);

@@ -19,6 +19,81 @@ extern "C" {
 #if !defined(LIBYUV_DISABLE_MIPS) && defined(__mips__) && \
     (_MIPS_SIM == _MIPS_SIM_ABI32)
 
+#ifdef HAS_YUY2TOYROW_MMI
+void YUY2ToYRow_MMI(const uint8* src_yuy2, uint8* dst_y, int width) {
+  __asm__ volatile (
+    "li         $8, 0x08                                \n\t"
+    "mtc1       $8, $f10                                \n\t"
+    "pcmpeqb    $f8, $f8, $f8                           \n\t"
+    "psrlh      $f8, $f8, $f10                          \n\t"
+    "1:                                                 \n\t"
+    "gslqc1     $f2, $f0, 0x00(%[src_yuy2])             \n\t"
+    "gslqc1     $f6, $f4, 0x10(%[src_yuy2])             \n\t"
+    "daddiu     %[src_yuy2], %[src_yuy2], 0x20          \n\t"
+    "and        $f0, $f0, $f8                           \n\t"
+    "and        $f2, $f2, $f8                           \n\t"
+    "and        $f4, $f4, $f8                           \n\t"
+    "and        $f6, $f6, $f8                           \n\t"
+    "packushb   $f0, $f0, $f2                           \n\t"
+    "packushb   $f2, $f4, $f6                           \n\t"
+    "gssqc1     $f2, $f0, 0x00(%[dst_y])                \n\t"
+    "daddiu     %[width], %[width], -0x10               \n\t"
+    "daddiu     %[dst_y], %[dst_y], 0x10                \n\t"
+    "bgtz       %[width], 1b                            \n\t"
+    :[src_yuy2]"+&r"((uint8*)src_yuy2),     [dst_y]"+&r"((uint8*)dst_y),
+     [width]"+&r"(width)
+    ::"memory","$8","$f0","$f2","$f4","$f6","$f8","$f10"
+  );
+}
+
+void YUY2ToUVRow_MMI(const uint8* src_yuy2, int stride_yuy2,
+        uint8* dst_u, uint8* dst_v, int width) {
+  __asm__ volatile (
+    "li         $8, 0x08                                \n\t"
+    "mtc1       $8, $f22                                \n\t"
+    "pcmpeqb    $f20, $f20, $f20                        \n\t"
+    "psrlh      $f20, $f20, $f22                        \n\t"
+    "dsubu      %[dst_v], %[dst_v], %[dst_u]            \n\t"
+    "1:                                                 \n\t"
+    "gslqc1     $f2, $f0, 0x0(%[src_yuy2])              \n\t"
+    "gslqc1     $f6, $f4, 0x10(%[src_yuy2])             \n\t"
+    "daddu      $8, %[src_yuy2], %[stride_yuy2]         \n\t"
+    "gslqc1     $f10, $f8, 0x00($8)                     \n\t"
+    "gslqc1     $f14, $f12, 0x10($8)                    \n\t"
+    "daddiu     %[src_yuy2], %[src_yuy2], 0x20          \n\t"
+    "pavgb      $f0, $f0, $f8                           \n\t"
+    "pavgb      $f2, $f2, $f10                          \n\t"
+    "pavgb      $f4, $f4, $f12                          \n\t"
+    "pavgb      $f6, $f6, $f14                          \n\t"
+    "psrlh      $f0, $f0, $f22                          \n\t"
+    "psrlh      $f2, $f2, $f22                          \n\t"
+    "psrlh      $f4, $f4, $f22                          \n\t"
+    "psrlh      $f6, $f6, $f22                          \n\t"
+    "packushb   $f0, $f0, $f2                           \n\t"
+    "packushb   $f2, $f4, $f6                           \n\t"
+    "psrlh      $f4, $f0, $f22                          \n\t"
+    "and        $f0, $f0, $f20                          \n\t"
+    "psrlh      $f6, $f2, $f22                          \n\t"
+    "and        $f2, $f2, $f20                          \n\t"
+    "packushb   $f0, $f0, $f2                           \n\t"
+    "packushb   $f4, $f4, $f6                           \n\t"
+    "gssdlc1    $f0, 0x07(%[dst_u])                     \n\t"
+    "gssdrc1    $f0, 0x00(%[dst_u])                     \n\t"
+    "daddu      $8, %[dst_u], %[dst_v]                  \n\t"
+    "gssdlc1    $f4, 0x07($8)                           \n\t"
+    "gssdrc1    $f4, 0x00($8)                           \n\t"
+    "daddiu     %[width], %[width], -0x10               \n\t"
+    "daddiu     %[dst_u], %[dst_u], 0x08                \n\t"
+    "bgtz       %[width], 1b                            \n\t"
+    : [src_yuy2]"+&r"((uint8 *)src_yuy2),   [dst_u]"+&r"((uint8 *)dst_u),
+      [dst_v]"+&r"((uint8 *)dst_v),         [width]"+&r"(width)
+    : [stride_yuy2]"r"((intptr_t)(stride_yuy2))
+    : "memory","$8","$f0","$f2","$f4","$f6","$f10","$f12","$f14","$f16","$f18",
+      "$f20","$f22"
+  );
+}
+#endif  // HAS_YUY2TOYROW_MMI
+
 #ifdef HAS_COPYROW_MIPS
 void CopyRow_MIPS(const uint8* src, uint8* dst, int count) {
   __asm__ __volatile__ (

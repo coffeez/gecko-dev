@@ -429,6 +429,12 @@ int YUY2ToI420(const uint8* src_yuy2, int src_stride_yuy2,
     }
   }
 #endif
+#if defined(HAS_YUY2TOYROW_MMI)
+  if (width >= 8) {
+    YUY2ToYRow = YUY2ToYRow_MMI;
+    YUY2ToUVRow = YUY2ToUVRow_MMI;
+  }
+#endif
 
   for (y = 0; y < height - 1; y += 2) {
     YUY2ToUVRow(src_yuy2, src_stride_yuy2, dst_u, dst_v, width);
