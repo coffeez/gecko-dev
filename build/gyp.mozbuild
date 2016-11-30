@@ -113,6 +113,12 @@ arches = {
 
 gyp_vars['target_arch'] = arches.get(CONFIG['CPU_ARCH'], CONFIG['CPU_ARCH'])
 
+if CONFIG['WEBRTC_LOONGSON_ASM']:
+    gyp_vars['mips_arch_variant'] = 'loongson'
+    gyp_vars['android_webview_build'] = 0
+    gyp_vars['mips_dsp_rev'] = 0
+    gyp_vars['mips_float_abi'] = "hard"
+
 if CONFIG['ARM_ARCH']:
     if int(CONFIG['ARM_ARCH']) < 7:
         gyp_vars['armv7'] = 0

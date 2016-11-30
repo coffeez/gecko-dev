@@ -111,6 +111,10 @@ class SincResampler {
   static float Convolve_NEON(const float* input_ptr, const float* k1,
                              const float* k2,
                              double kernel_interpolation_factor);
+#elif defined(WEBRTC_ARCH_MIPS) && defined(WEBRTC_LOONGSON_ASM)
+  static float Convolve_MMI(const float* input_ptr, const float* k1,
+                            const float* k2,
+                            double kernel_interpolation_factor);
 #endif
 
   // The ratio of input / output sample rates.

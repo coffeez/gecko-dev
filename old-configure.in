@@ -2452,6 +2452,7 @@ MOZ_SRTP=
 MOZ_WEBRTC_SIGNALING=
 MOZ_WEBRTC_ASSERT_ALWAYS=1
 MOZ_WEBRTC_HARDWARE_AEC_NS=
+WEBRTC_LOONGSON_ASM=
 MOZ_SCTP=
 MOZ_ANDROID_OMX=
 MOZ_OMX_PLUGIN=
@@ -3184,6 +3185,11 @@ case "$CPU_ARCH" in
 x86_64 | arm | aarch64 | x86 | ppc* | ia64)
     :
     ;;
+mips*)
+#ifdef _MIPS_ARCH_LOONGSON3A
+    WEBRTC_LOONGSON_ASM=1
+#endif
+    ;;
 *)
 # unsupported arch for webrtc
     MOZ_WEBRTC=
@@ -3234,6 +3240,10 @@ MOZ_ARG_ENABLE_BOOL(hardware-aec-ns,
 
 if test -n "$MOZ_WEBRTC_HARDWARE_AEC_NS"; then
     AC_DEFINE(MOZ_WEBRTC_HARDWARE_AEC_NS)
+fi
+
+if test -n "$WEBRTC_LOONGSON_ASM"; then
+    AC_DEFINE(WEBRTC_LOONGSON_ASM)
 fi
 
 AC_SUBST(MOZ_WEBRTC)
