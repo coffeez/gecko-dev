@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 
+#include "vpx_ports/asmdefs_mmi.h"
 #include "vpx/vpx_integer.h"
 #include "vpx_ports/mem.h"
 
@@ -243,7 +244,95 @@ void vpx_sad16x32x4d_mmi(const uint8_t *src, int src_stride,
 //sadMxN(16, 16)
 unsigned int vpx_sad16x16_mmi(const uint8_t *src, int src_stride,
                               const uint8_t *ref, int ref_stride) {
-  return sad(src, src_stride, ref, ref_stride, 16, 16);
+#if 1
+  unsigned int sad = 0;
+  double ftmp[7];
+  uint64_t tmp[2];
+
+  __asm__ volatile (
+    "li         %[tmp1],    0x20                                \n\t"
+    "li         %[tmp0],    0x08                                \n\t"
+    "mtc1       %[tmp1],    %[ftmp5]                            \n\t"
+    "xor        %[ftmp0],   %[ftmp0],       %[ftmp0]            \n\t"
+    "xor        %[ftmp6],   %[ftmp6],       %[ftmp6]            \n\t"
+    "1:                                                         \n\t"
+    "gsldlc1    %[ftmp1],   0x07(%[src])                        \n\t"
+    "gsldrc1    %[ftmp1],   0x00(%[src])                        \n\t"
+    "gsldlc1    %[ftmp2],   0x0f(%[src])                        \n\t"
+    "gsldrc1    %[ftmp2],   0x08(%[src])                        \n\t"
+    "gsldlc1    %[ftmp3],   0x07(%[ref])                        \n\t"
+    "gsldrc1    %[ftmp3],   0x00(%[ref])                        \n\t"
+    "gsldlc1    %[ftmp4],   0x0f(%[ref])                        \n\t"
+    "gsldrc1    %[ftmp4],   0x08(%[ref])                        \n\t"
+    "pasubub    %[ftmp1],   %[ftmp1],       %[ftmp3]            \n\t"
+    "pasubub    %[ftmp3],   %[ftmp3],       %[ftmp4]            \n\t"
+    "paddusb    %[ftmp1],   %[ftmp1],       %[ftmp3]            \n\t"
+    "biadd      %[ftmp1],   %[ftmp1]                            \n\t"
+    "paddw      %[ftmp6],   %[ftmp6],       %[ftmp1]            \n\t"
+    PTR_ADDU   "%[src],     %[src],         %[src_stride]       \n\t"
+    PTR_ADDU   "%[ref],     %[ref],         %[ref_stride]       \n\t"
+
+    "gsldlc1    %[ftmp1],   0x07(%[src])                        \n\t"
+    "gsldrc1    %[ftmp1],   0x00(%[src])                        \n\t"
+    "gsldlc1    %[ftmp2],   0x0f(%[src])                        \n\t"
+    "gsldrc1    %[ftmp2],   0x08(%[src])                        \n\t"
+    "gsldlc1    %[ftmp3],   0x07(%[ref])                        \n\t"
+    "gsldrc1    %[ftmp3],   0x00(%[ref])                        \n\t"
+    "gsldlc1    %[ftmp4],   0x0f(%[ref])                        \n\t"
+    "gsldrc1    %[ftmp4],   0x08(%[ref])                        \n\t"
+    "pasubub    %[ftmp1],   %[ftmp1],       %[ftmp3]            \n\t"
+    "pasubub    %[ftmp3],   %[ftmp3],       %[ftmp4]            \n\t"
+    "paddusb    %[ftmp1],   %[ftmp1],       %[ftmp3]            \n\t"
+    "biadd      %[ftmp1],   %[ftmp1]                            \n\t"
+    "paddw      %[ftmp6],   %[ftmp6],       %[ftmp1]            \n\t"
+
+    "addi       %[tmp0],    %[tmp0],        -0x02               \n\t"
+    PTR_ADDU   "%[src],     %[src],         %[src_stride]       \n\t"
+    PTR_ADDU   "%[ref],     %[ref],         %[ref_stride]       \n\t"
+    "bnez       %[tmp0],    1b                                  \n\t"
+    "mfc1       %[sad],     %[ftmp6]                            \n\t"
+    : [ftmp0]"=&f"(ftmp[0]),            [ftmp1]"=&f"(ftmp[1]),
+      [ftmp2]"=&f"(ftmp[2]),            [ftmp3]"=&f"(ftmp[3]),
+      [ftmp4]"=&f"(ftmp[4]),            [ftmp5]"=&f"(ftmp[5]),
+      [ftmp6]"=&f"(ftmp[6]),
+      [tmp0]"=&r"(tmp[0]),              [tmp1]"=&r"(tmp[1]),
+      [src]"+&r"(src),                  [ref]"+&r"(ref),
+      [sad]"=r"(sad)
+    : [src_stride]"r"((mips_reg)src_stride),
+      [ref_stride]"r"((mips_reg)ref_stride)
+    : "memory"
+  );
+  return sad;
+#else
+  int y;
+  unsigned int sad = 0;
+
+  for (y = 0; y < 16; y++) {
+    sad += abs(src[0] - ref[0]);
+    sad += abs(src[1] - ref[1]);
+    sad += abs(src[2] - ref[2]);
+    sad += abs(src[3] - ref[3]);
+
+    sad += abs(src[4] - ref[4]);
+    sad += abs(src[5] - ref[5]);
+    sad += abs(src[6] - ref[6]);
+    sad += abs(src[7] - ref[7]);
+
+    sad += abs(src[8] - ref[8]);
+    sad += abs(src[9] - ref[9]);
+    sad += abs(src[10] - ref[10]);
+    sad += abs(src[11] - ref[11]);
+
+    sad += abs(src[12] - ref[12]);
+    sad += abs(src[13] - ref[13]);
+    sad += abs(src[14] - ref[14]);
+    sad += abs(src[15] - ref[15]);
+
+    src += src_stride;
+    ref += ref_stride;
+  }
+  return sad;
+#endif
 }
 
 unsigned int vpx_sad16x16_avg_mmi(const uint8_t *src, int src_stride,
