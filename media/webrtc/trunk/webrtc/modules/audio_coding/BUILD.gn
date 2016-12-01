@@ -556,7 +556,7 @@ source_set("isacfix") {
     sources += [ "codecs/isac/fix/source/pitch_filter_c.c" ]
   }
 
-  if (current_cpu == "mipsel" && arch_mips_variant != "loongson") {
+  if (current_cpu == "mipsel" || current_cpu == "mips64el") {
     sources += [
       "codecs/isac/fix/source/entropy_coding_mips.c",
       "codecs/isac/fix/source/filters_mips.c",

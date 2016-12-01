@@ -71,7 +71,7 @@ void WebRtcIsacfix_AllpassFilter2FixDec16MIPS(
     "mul            %[r1],          %[r5],                  %[f_ch21]     \n\t"
     "sh             %[r4],          0(%[data_ch1])                        \n\t"
     "sh             %[r5],          0(%[data_ch2])                        \n\t"
-    "addiu          %[data_ch1],    %[data_ch1],            2             \n\t"
+    PTR_ADDIU      "%[data_ch1],    %[data_ch1],            2             \n\t"
     "sll            %[r2],          %[r2],                  16            \n\t"
     "sll            %[r0],          %[r0],                  1             \n\t"
     "subq_s.w       %[st1_ch1],     %[r2],                  %[r0]         \n\t"
@@ -79,7 +79,7 @@ void WebRtcIsacfix_AllpassFilter2FixDec16MIPS(
     "sll            %[r1],          %[r1],                  1             \n\t"
     "subq_s.w       %[st1_ch2],     %[r3],                  %[r1]         \n\t"
     "bgtz           %[length],      1b                                    \n\t"
-    " addiu         %[data_ch2],    %[data_ch2],            2             \n\t"
+    PTR_ADDIU      "%[data_ch2],    %[data_ch2],            2             \n\t"
     // Store channel states.
     "sw             %[st0_ch1],     0(%[filter_state_ch1])                \n\t"
     "sw             %[st1_ch1],     4(%[filter_state_ch1])                \n\t"

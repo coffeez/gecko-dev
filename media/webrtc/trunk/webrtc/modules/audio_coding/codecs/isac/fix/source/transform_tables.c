@@ -92,7 +92,7 @@ const int16_t WebRtcIsacfix_kSinTab2[FRAMESAMPLES/4] = {
 };
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 /* Cosine table 2 in Q14. Used only on MIPS platforms. */
 const int16_t WebRtcIsacfix_kCosTab2[FRAMESAMPLES/4] = {
   107,   -322,   536,   -750,   965,  -1179,  1392,  -1606,  1819,  -2032,
