@@ -151,7 +151,7 @@ source_set("audio_processing") {
       "ns/nsx_core.h",
       "ns/nsx_defines.h",
     ]
-    if (current_cpu == "mipsel") {
+    if (current_cpu == "mipsel" && arch_mips_variant != "loongson") {
       sources += [ "ns/nsx_core_mips.c" ]
     } else {
       sources += [ "ns/nsx_core_c.c" ]
@@ -176,7 +176,7 @@ source_set("audio_processing") {
     deps += [ ":audio_processing_neon" ]
   }
 
-  if (current_cpu == "mipsel") {
+  if (current_cpu == "mipsel" && arch_mips_variant != "loongson") {
     sources += [ "aecm/aecm_core_mips.c" ]
     if (mips_float_abi == "hard") {
       sources += [

@@ -1231,7 +1231,7 @@
       }],
 
       # Disable SSE2 when building for ARM or MIPS.
-      ['target_arch=="arm" or target_arch=="mipsel"', {
+      ['target_arch=="arm" or target_arch=="mipsel" or target_arch=="mips64el"', {
         'disable_sse2%': 1,
       }, {
         'disable_sse2%': '<(disable_sse2)',
