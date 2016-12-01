@@ -416,7 +416,7 @@ void WebRtcAecm_StoreAdaptiveChannelNeon(AecmCore* aecm,
 void WebRtcAecm_ResetAdaptiveChannelNeon(AecmCore* aecm);
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 void WebRtcAecm_CalcLinearEnergies_mips(AecmCore* aecm,
                                         const uint16_t* far_spectrum,
                                         int32_t* echo_est,

@@ -372,7 +372,7 @@ static void WebRtcAecm_InitNeon(void)
 #endif
 
 // Initialize function pointers for MIPS platform.
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 static void WebRtcAecm_InitMips(void)
 {
 #if defined(MIPS_DSP_R1_LE)
@@ -519,7 +519,7 @@ int WebRtcAecm_InitCore(AecmCore* const aecm, int samplingFreq) {
     WebRtcAecm_InitNeon();
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
     WebRtcAecm_InitMips();
 #endif
     return 0;

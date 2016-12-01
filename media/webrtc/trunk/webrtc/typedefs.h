@@ -155,6 +155,34 @@ typedef unsigned int        uint32_t;
 typedef unsigned __int64    uint64_t;
 #endif
 
+#if defined(WEBRTC_ARCH_MIPS)
+#if defined(WEBRTC_ARCH_64_BITS)
+# define mips_reg           int64_t
+# define PTR_ADDU           "daddu "
+# define PTR_ADDIU          "daddiu "
+# define PTR_ADDI           "daddi "
+# define PTR_SUBU           "dsubu "
+# define PTR_L              "ld "
+# define PTR_SRA            "dsra "
+# define PTR_SRL            "dsrl "
+# define PTR_SLL            "dsll "
+# define PTR_MTC1           "dmtc1 "
+# define PTR_LI             "dli "
+#elif defined(WEBRTC_ARCH_32_BITS)
+# define mips_reg           int32_t
+# define PTR_ADDU           "addu "
+# define PTR_ADDIU          "addiu "
+# define PTR_ADDI           "daddi "
+# define PTR_SUBU           "subu "
+# define PTR_L              "lw "
+# define PTR_SRA            "sra "
+# define PTR_SRL            "srl "
+# define PTR_SLL            "sll "
+# define PTR_MTC1           "mtc1 "
+# define PTR_LI             "li "
+#endif
+#endif
+
 // Annotate a function indicating the caller must examine the return value.
 // Use like:
 //   int foo() WARN_UNUSED_RESULT;

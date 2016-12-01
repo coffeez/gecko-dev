@@ -82,8 +82,9 @@ static void WindowAndFFT(AecmCore* aecm,
   int16_t* pfrfi;
   ComplexInt16* pfreq_signal;
   int16_t  f_coef, s_coef;
-  int32_t load_ptr, store_ptr1, store_ptr2, shift, shift1;
-  int32_t hann, hann1, coefs;
+  mips_reg load_ptr, store_ptr1, store_ptr2;
+  int32_t shift, shift1;
+  mips_reg hann, hann1, coefs;
 
   memset(fft, 0, sizeof(int16_t) * PART_LEN4);
 
@@ -93,10 +94,10 @@ static void WindowAndFFT(AecmCore* aecm,
     ".set        noreorder                                               \n\t"
     "addiu       %[shift],          %[time_signal_scaling], -14          \n\t"
     "addiu       %[i],              $zero,                  64           \n\t"
-    "addiu       %[load_ptr],       %[time_signal],         0            \n\t"
-    "addiu       %[hann],           %[hanning],             0            \n\t"
-    "addiu       %[hann1],          %[hanning],             128          \n\t"
-    "addiu       %[coefs],          %[coefTable],           0            \n\t"
+    PTR_ADDIU   "%[load_ptr],       %[time_signal],         0            \n\t"
+    PTR_ADDIU   "%[hann],           %[hanning],             0            \n\t"
+    PTR_ADDIU   "%[hann1],          %[hanning],             128          \n\t"
+    PTR_ADDIU   "%[coefs],          %[coefTable],           0            \n\t"
     "bltz        %[shift],          2f                                   \n\t"
     " negu       %[shift1],         %[shift]                             \n\t"
    "1:                                                                   \n\t"
@@ -109,17 +110,17 @@ static void WindowAndFFT(AecmCore* aecm,
     "mul         %[tmp3],           %[tmp3],                %[tmp4]      \n\t"
     "lh          %[f_coef],         0(%[coefs])                          \n\t"
     "lh          %[s_coef],         2(%[coefs])                          \n\t"
-    "addiu       %[load_ptr],       %[load_ptr],            2            \n\t"
-    "addiu       %[hann],           %[hann],                2            \n\t"
-    "addiu       %[hann1],          %[hann1],               -2           \n\t"
-    "addu        %[store_ptr1],     %[fft],                 %[f_coef]    \n\t"
-    "addu        %[store_ptr2],     %[fft],                 %[s_coef]    \n\t"
+    PTR_ADDIU   "%[load_ptr],       %[load_ptr],            2            \n\t"
+    PTR_ADDIU   "%[hann],           %[hann],                2            \n\t"
+    PTR_ADDIU   "%[hann1],          %[hann1],               -2           \n\t"
+    PTR_ADDU    "%[store_ptr1],     %[fft],                 %[f_coef]    \n\t"
+    PTR_ADDU    "%[store_ptr2],     %[fft],                 %[s_coef]    \n\t"
     "sllv        %[tmp1],           %[tmp1],                %[shift]     \n\t"
     "sllv        %[tmp3],           %[tmp3],                %[shift]     \n\t"
     "sh          %[tmp1],           0(%[store_ptr1])                     \n\t"
     "sh          %[tmp3],           0(%[store_ptr2])                     \n\t"
     "bgtz        %[i],              1b                                   \n\t"
-    " addiu      %[coefs],          %[coefs],               4            \n\t"
+    PTR_ADDIU   "%[coefs],          %[coefs],               4            \n\t"
     "b           3f                                                      \n\t"
     " nop                                                                \n\t"
    "2:                                                                   \n\t"
@@ -132,17 +133,17 @@ static void WindowAndFFT(AecmCore* aecm,
     "mul         %[tmp3],           %[tmp3],                %[tmp4]      \n\t"
     "lh          %[f_coef],         0(%[coefs])                          \n\t"
     "lh          %[s_coef],         2(%[coefs])                          \n\t"
-    "addiu       %[load_ptr],       %[load_ptr],            2            \n\t"
-    "addiu       %[hann],           %[hann],                2            \n\t"
-    "addiu       %[hann1],          %[hann1],               -2           \n\t"
-    "addu        %[store_ptr1],     %[fft],                 %[f_coef]    \n\t"
-    "addu        %[store_ptr2],     %[fft],                 %[s_coef]    \n\t"
+    PTR_ADDIU   "%[load_ptr],       %[load_ptr],            2            \n\t"
+    PTR_ADDIU   "%[hann],           %[hann],                2            \n\t"
+    PTR_ADDIU   "%[hann1],          %[hann1],               -2           \n\t"
+    PTR_ADDU    "%[store_ptr1],     %[fft],                 %[f_coef]    \n\t"
+    PTR_ADDU    "%[store_ptr2],     %[fft],                 %[s_coef]    \n\t"
     "srav        %[tmp1],           %[tmp1],                %[shift1]    \n\t"
     "srav        %[tmp3],           %[tmp3],                %[shift1]    \n\t"
     "sh          %[tmp1],           0(%[store_ptr1])                     \n\t"
     "sh          %[tmp3],           0(%[store_ptr2])                     \n\t"
     "bgtz        %[i],              2b                                   \n\t"
-    " addiu      %[coefs],          %[coefs],               4            \n\t"
+    PTR_ADDIU   "%[coefs],          %[coefs],               4            \n\t"
    "3:                                                                   \n\t"
     ".set        pop                                                     \n\t"
     : [load_ptr] "=&r" (load_ptr), [shift] "=&r" (shift), [hann] "=&r" (hann),
@@ -187,9 +188,9 @@ static void WindowAndFFT(AecmCore* aecm,
     "subu        %[tmp4],           $zero,                 %[tmp4]        \n\t"
     "sh          %[tmp3],           12(%[pfreq_signal])                   \n\t"
     "sh          %[tmp4],           14(%[pfreq_signal])                   \n\t"
-    "addiu       %[pfreq_signal],   %[pfreq_signal],       16             \n\t"
+    PTR_ADDIU   "%[pfreq_signal],   %[pfreq_signal],       16             \n\t"
     "bgtz        %[j],              1b                                    \n\t"
-    " addiu      %[pfrfi],          %[pfrfi],              16             \n\t"
+    PTR_ADDIU   "%[pfrfi],          %[pfrfi],              16             \n\t"
     ".set        pop                                                      \n\t"
     : [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2), [tmp3] "=&r" (tmp3),
       [j] "=&r" (j), [pfrfi] "+r" (pfrfi), [pfreq_signal] "+r" (pfreq_signal),
@@ -225,10 +226,10 @@ static void InverseFFTAndWindow(AecmCore* aecm,
     "lh        %[tmp2],             2(%[pcoefTable_ifft])                  \n\t"
     "lh        %[tmp_re],           0(%[pefw])                             \n\t"
     "lh        %[tmp_im],           2(%[pefw])                             \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp2]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp2]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp1]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp1]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "subu      %[tmp_im],           $zero,                   %[tmp_im]     \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
@@ -236,10 +237,10 @@ static void InverseFFTAndWindow(AecmCore* aecm,
     "lh        %[tmp2],             6(%[pcoefTable_ifft])                  \n\t"
     "lh        %[tmp_re],           4(%[pefw])                             \n\t"
     "lh        %[tmp_im],           6(%[pefw])                             \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp2]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp2]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp1]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp1]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "subu      %[tmp_im],           $zero,                   %[tmp_im]     \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
@@ -247,10 +248,10 @@ static void InverseFFTAndWindow(AecmCore* aecm,
     "lh        %[tmp2],             10(%[pcoefTable_ifft])                 \n\t"
     "lh        %[tmp_re],           8(%[pefw])                             \n\t"
     "lh        %[tmp_im],           10(%[pefw])                            \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp2]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp2]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp1]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp1]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "subu      %[tmp_im],           $zero,                   %[tmp_im]     \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
@@ -258,17 +259,17 @@ static void InverseFFTAndWindow(AecmCore* aecm,
     "lh        %[tmp2],             14(%[pcoefTable_ifft])                 \n\t"
     "lh        %[tmp_re],           12(%[pefw])                            \n\t"
     "lh        %[tmp_im],           14(%[pefw])                            \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp2]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp2]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
-    "addu      %[pfft],             %[fft],                  %[tmp1]       \n\t"
+    PTR_ADDU  "%[pfft],             %[fft],                  %[tmp1]       \n\t"
     "sh        %[tmp_re],           0(%[pfft])                             \n\t"
     "subu      %[tmp_im],           $zero,                   %[tmp_im]     \n\t"
     "sh        %[tmp_im],           2(%[pfft])                             \n\t"
-    "addiu     %[pcoefTable_ifft],  %[pcoefTable_ifft],      16            \n\t"
+    PTR_ADDIU "%[pcoefTable_ifft],  %[pcoefTable_ifft],      16            \n\t"
     "addiu     %[i],                %[i],                    -4            \n\t"
     "bgtz      %[i],                1b                                     \n\t"
-    " addiu    %[pefw],             %[pefw],                 16            \n\t"
+    PTR_ADDIU "%[pefw],             %[pefw],                 16            \n\t"
     ".set      pop                                                         \n\t"
     : [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2), [pfft] "+r" (pfft),
       [i] "=&r" (i), [tmp_re] "=&r" (tmp_re), [tmp_im] "=&r" (tmp_im),
@@ -298,7 +299,7 @@ static void InverseFFTAndWindow(AecmCore* aecm,
     "sh         %[tmp2],         2(%[pfft])                        \n\t"
     "sh         %[tmp3],         4(%[pfft])                        \n\t"
     "sh         %[tmp4],         6(%[pfft])                        \n\t"
-    "addiu      %[ppfft],        %[ppfft],            16           \n\t"
+    PTR_ADDIU  "%[ppfft],        %[ppfft],            16           \n\t"
     "bgtz       %[i],            1b                                \n\t"
     " addiu     %[pfft],         %[pfft],             8            \n\t"
     ".set       pop                                                \n\t"
@@ -402,12 +403,12 @@ static void InverseFFTAndWindow(AecmCore* aecm,
 #endif  // #if defined(MIPS_DSP_R1_LE)
     "sh         %[tmp1],             0(%[paecm_buf])                       \n\t"
     "sh         %[tmp3],             2(%[paecm_buf])                       \n\t"
-    "addiu      %[output1],          %[output1],             4             \n\t"
-    "addiu      %[paecm_buf],        %[paecm_buf],           4             \n\t"
-    "addiu      %[pfft],             %[pfft],                4             \n\t"
-    "addiu      %[p_kSqrtHanning],   %[p_kSqrtHanning],      4             \n\t"
+    PTR_ADDIU  "%[output1],          %[output1],             4             \n\t"
+    PTR_ADDIU  "%[paecm_buf],        %[paecm_buf],           4             \n\t"
+    PTR_ADDIU  "%[pfft],             %[pfft],                4             \n\t"
+    PTR_ADDIU  "%[p_kSqrtHanning],   %[p_kSqrtHanning],      4             \n\t"
     "bgtz       %[i],                11b                                   \n\t"
-    " addiu     %[pp_kSqrtHanning],  %[pp_kSqrtHanning],     -4            \n\t"
+    PTR_ADDIU  "%[pp_kSqrtHanning],  %[pp_kSqrtHanning],     -4            \n\t"
     ".set       pop                                                        \n\t"
     : [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2), [pfft] "+r" (pfft),
       [output1] "+r" (output1), [tmp3] "=&r" (tmp3), [tmp4] "=&r" (tmp4),
@@ -439,9 +440,9 @@ void WebRtcAecm_CalcLinearEnergies_mips(AecmCore* aecm,
                                         uint32_t* echo_energy_adapt,
                                         uint32_t* echo_energy_stored) {
   int i;
-  uint32_t par1 = (*far_energy);
-  uint32_t par2 = (*echo_energy_adapt);
-  uint32_t par3 = (*echo_energy_stored);
+  mips_reg par1 = (*far_energy);
+  mips_reg par2 = (*echo_energy_adapt);
+  mips_reg par3 = (*echo_energy_stored);
   int16_t* ch_stored_p = &(aecm->channelStored[0]);
   int16_t* ch_adapt_p = &(aecm->channelAdapt16[0]);
   uint16_t* spectrum_p = (uint16_t*)(&(far_spectrum[0]));
@@ -465,13 +466,13 @@ void WebRtcAecm_CalcLinearEnergies_mips(AecmCore* aecm,
       "mul            %[temp0],       %[adept0],      %[spectrum0]    \n\t"
       "mul            %[echo1],       %[stored1],     %[spectrum1]    \n\t"
       "mul            %[temp1],       %[adept1],      %[spectrum1]    \n\t"
-      "addu           %[par1],        %[par1],        %[spectrum0]    \n\t"
-      "addu           %[par1],        %[par1],        %[spectrum1]    \n\t"
-      "addiu          %[echo_p],      %[echo_p],      16              \n\t"
-      "addu           %[par3],        %[par3],        %[echo0]        \n\t"
-      "addu           %[par2],        %[par2],        %[temp0]        \n\t"
-      "addu           %[par3],        %[par3],        %[echo1]        \n\t"
-      "addu           %[par2],        %[par2],        %[temp1]        \n\t"
+      PTR_ADDU       "%[par1],        %[par1],        %[spectrum0]    \n\t"
+      PTR_ADDU       "%[par1],        %[par1],        %[spectrum1]    \n\t"
+      PTR_ADDIU      "%[echo_p],      %[echo_p],      16              \n\t"
+      PTR_ADDU       "%[par3],        %[par3],        %[echo0]        \n\t"
+      PTR_ADDU       "%[par2],        %[par2],        %[temp0]        \n\t"
+      PTR_ADDU       "%[par3],        %[par3],        %[echo1]        \n\t"
+      PTR_ADDU       "%[par2],        %[par2],        %[temp1]        \n\t"
       "usw            %[echo0],       -16(%[echo_p])                  \n\t"
       "usw            %[echo1],       -12(%[echo_p])                  \n\t"
       "lh             %[stored0],     4(%[ch_stored_p])               \n\t"
@@ -484,15 +485,15 @@ void WebRtcAecm_CalcLinearEnergies_mips(AecmCore* aecm,
       "mul            %[temp0],       %[adept0],      %[spectrum0]    \n\t"
       "mul            %[echo1],       %[stored1],     %[spectrum1]    \n\t"
       "mul            %[temp1],       %[adept1],      %[spectrum1]    \n\t"
-      "addu           %[par1],        %[par1],        %[spectrum0]    \n\t"
-      "addu           %[par1],        %[par1],        %[spectrum1]    \n\t"
-      "addiu          %[ch_stored_p], %[ch_stored_p], 8               \n\t"
-      "addiu          %[ch_adapt_p],  %[ch_adapt_p],  8               \n\t"
-      "addiu          %[spectrum_p],  %[spectrum_p],  8               \n\t"
-      "addu           %[par3],        %[par3],        %[echo0]        \n\t"
-      "addu           %[par2],        %[par2],        %[temp0]        \n\t"
-      "addu           %[par3],        %[par3],        %[echo1]        \n\t"
-      "addu           %[par2],        %[par2],        %[temp1]        \n\t"
+      PTR_ADDU       "%[par1],        %[par1],        %[spectrum0]    \n\t"
+      PTR_ADDU       "%[par1],        %[par1],        %[spectrum1]    \n\t"
+      PTR_ADDIU      "%[ch_stored_p], %[ch_stored_p], 8               \n\t"
+      PTR_ADDIU      "%[ch_adapt_p],  %[ch_adapt_p],  8               \n\t"
+      PTR_ADDIU      "%[spectrum_p],  %[spectrum_p],  8               \n\t"
+      PTR_ADDU       "%[par3],        %[par3],        %[echo0]        \n\t"
+      PTR_ADDU       "%[par2],        %[par2],        %[temp0]        \n\t"
+      PTR_ADDU       "%[par3],        %[par3],        %[echo1]        \n\t"
+      PTR_ADDU       "%[par2],        %[par2],        %[temp1]        \n\t"
       "usw            %[echo0],       -8(%[echo_p])                   \n\t"
       "usw            %[echo1],       -4(%[echo_p])                   \n\t"
       ".set           pop                                             \n\t"
@@ -546,9 +547,9 @@ void WebRtcAecm_StoreAdaptiveChannel_mips(AecmCore* aecm,
       "muleq_s.w.phr  %[temp0],   %[temp2],     %[temp0]    \n\t"
       "muleq_s.w.phl  %[temp6],   %[temp5],     %[temp4]    \n\t"
       "muleq_s.w.phr  %[temp4],   %[temp5],     %[temp4]    \n\t"
-      "addiu          %[temp7],   %[temp7],     16          \n\t"
-      "addiu          %[temp1],   %[temp1],     8           \n\t"
-      "addiu          %[temp8],   %[temp8],     8           \n\t"
+      PTR_ADDIU      "%[temp7],   %[temp7],     16          \n\t"
+      PTR_ADDIU      "%[temp1],   %[temp1],     8           \n\t"
+      PTR_ADDIU      "%[temp8],   %[temp8],     8           \n\t"
       "sra            %[temp3],   %[temp3],     1           \n\t"
       "sra            %[temp0],   %[temp0],     1           \n\t"
       "sra            %[temp6],   %[temp6],     1           \n\t"
@@ -592,12 +593,12 @@ void WebRtcAecm_ResetAdaptiveChannel_mips(AecmCore* aecm) {
       "preceq.w.phr   %[temp1], %[temp1]              \n\t"
       "preceq.w.phl   %[temp5], %[temp4]              \n\t"
       "preceq.w.phr   %[temp4], %[temp4]              \n\t"
-      "addiu          %[temp0], %[temp0], 8           \n\t"
+      PTR_ADDIU      "%[temp0], %[temp0], 8           \n\t"
       "usw            %[temp2], 4(%[temp3])           \n\t"
       "usw            %[temp1], 0(%[temp3])           \n\t"
       "usw            %[temp5], 12(%[temp3])          \n\t"
       "usw            %[temp4], 8(%[temp3])           \n\t"
-      "addiu          %[temp3], %[temp3], 16          \n\t"
+      PTR_ADDIU      "%[temp3], %[temp3], 16          \n\t"
       : [temp1] "=&r" (temp1), [temp2] "=&r" (temp2),
         [temp4] "=&r" (temp4), [temp5] "=&r" (temp5),
         [temp3] "+r" (temp3), [temp0] "+r" (temp0)
@@ -712,7 +713,7 @@ static int TimeToFrequencyDomain(AecmCore* aecm,
     "dpaq_s.w.ph    $ac0,           %[freqt0],  %[freqt0]   \n\t"
     "dpaq_s.w.ph    $ac1,           %[freqt1],  %[freqt1]   \n\t"
     "dpaq_s.w.ph    $ac2,           %[freqt2],  %[freqt2]   \n\t"
-    "addiu          %[freqp],       %[freqp],   12          \n\t"
+    PTR_ADDIU      "%[freqp],       %[freqp],   12          \n\t"
     "extr.w         %[tmp32no20],   $ac0,       1           \n\t"
     "extr.w         %[tmp32no21],   $ac1,       1           \n\t"
     "extr.w         %[tmp32no22],   $ac2,       1           \n\t"
@@ -749,8 +750,8 @@ static int TimeToFrequencyDomain(AecmCore* aecm,
       "dpaq_s.w.ph    $ac1,           %[freqt1],      %[freqt1]   \n\t"
       "dpaq_s.w.ph    $ac2,           %[freqt2],      %[freqt2]   \n\t"
       "dpaq_s.w.ph    $ac3,           %[freqt3],      %[freqt3]   \n\t"
-      "addiu          %[freqp],       %[freqp],       16          \n\t"
-      "addiu          %[freqabsp],    %[freqabsp],    8           \n\t"
+      PTR_ADDIU      "%[freqp],       %[freqp],       16          \n\t"
+      PTR_ADDIU      "%[freqabsp],    %[freqabsp],    8           \n\t"
       "extr.w         %[tmp32no20],   $ac0,           1           \n\t"
       "extr.w         %[tmp32no21],   $ac1,           1           \n\t"
       "extr.w         %[tmp32no22],   $ac2,           1           \n\t"
@@ -775,10 +776,10 @@ static int TimeToFrequencyDomain(AecmCore* aecm,
       "sh             %[tmp32no11],   -6(%[freqabsp])                 \n\t"
       "sh             %[tmp32no12],   -4(%[freqabsp])                 \n\t"
       "sh             %[tmp32no13],   -2(%[freqabsp])                 \n\t"
-      "addu           %[freqs],       %[freqs],       %[tmp32no10]    \n\t"
-      "addu           %[freqs],       %[freqs],       %[tmp32no11]    \n\t"
-      "addu           %[freqs],       %[freqs],       %[tmp32no12]    \n\t"
-      "addu           %[freqs],       %[freqs],       %[tmp32no13]    \n\t"
+      PTR_ADDU       "%[freqs],       %[freqs],       %[tmp32no10]    \n\t"
+      PTR_ADDU       "%[freqs],       %[freqs],       %[tmp32no11]    \n\t"
+      PTR_ADDU       "%[freqs],       %[freqs],       %[tmp32no12]    \n\t"
+      PTR_ADDU       "%[freqs],       %[freqs],       %[tmp32no13]    \n\t"
       : [freqs] "+r" (freqs)
       : [tmp32no10] "r" (tmp32no10), [tmp32no11] "r" (tmp32no11),
         [tmp32no12] "r" (tmp32no12), [tmp32no13] "r" (tmp32no13),
@@ -1094,7 +1095,7 @@ int WebRtcAecm_ProcessBlock(AecmCore* aecm,
         "sh         %[temp6],       10(%[ptr1])                 \n\t"
         "sh         %[temp7],       12(%[ptr1])                 \n\t"
         "sh         %[temp8],       14(%[ptr1])                 \n\t"
-        "addiu      %[ptr1],        %[ptr1],        16          \n\t"
+        PTR_ADDIU  "%[ptr1],        %[ptr1],        16          \n\t"
         : [temp1] "=&r" (temp1), [temp2] "=&r" (temp2), [temp3] "=&r" (temp3),
           [temp4] "=&r" (temp4), [temp5] "=&r" (temp5), [temp6] "=&r" (temp6),
           [temp7] "=&r" (temp7), [temp8] "=&r" (temp8), [ptr1] "+r" (ptr1)
@@ -1108,7 +1109,7 @@ int WebRtcAecm_ProcessBlock(AecmCore* aecm,
         "mul        %[temp1],       %[temp1],       %[temp1]    \n\t"
         "sra        %[temp1],       %[temp1],       14          \n\t"
         "sh         %[temp1],       0(%[ptr1])                  \n\t"
-        "addiu      %[ptr1],        %[ptr1],        2           \n\t"
+        PTR_ADDIU  "%[ptr1],        %[ptr1],        2           \n\t"
         : [temp1] "=&r" (temp1), [ptr1] "+r" (ptr1)
         :
         : "memory", "hi", "lo"
@@ -1150,7 +1151,7 @@ int WebRtcAecm_ProcessBlock(AecmCore* aecm,
           " lh        %[temp3],       2(%[dr_ptr])                \n\t"
           "slti       %[temp5],       %[temp1],       3277        \n\t"
           "bnez       %[temp5],       2f                          \n\t"
-          " addiu     %[dr_ptr],      %[dr_ptr],      4           \n\t"
+          PTR_ADDIU  "%[dr_ptr],      %[dr_ptr],      4           \n\t"
           "mul        %[temp2],       %[temp2],       %[temp1]    \n\t"
           "mul        %[temp3],       %[temp3],       %[temp1]    \n\t"
           "shra_r.w   %[temp2],       %[temp2],       14          \n\t"
@@ -1170,8 +1171,8 @@ int WebRtcAecm_ProcessBlock(AecmCore* aecm,
          "4:                                                      \n\t"
           "sh         %[temp2],       0(%[er_ptr])                \n\t"
           "sh         %[temp3],       2(%[er_ptr])                \n\t"
-          "addiu      %[ptr],         %[ptr],         2           \n\t"
-          "addiu      %[er_ptr],      %[er_ptr],      4           \n\t"
+          PTR_ADDIU  "%[ptr],         %[ptr],         2           \n\t"
+          PTR_ADDIU  "%[er_ptr],      %[er_ptr],      4           \n\t"
           ".set       pop                                         \n\t"
           : [temp1] "=&r" (temp1), [temp2] "=&r" (temp2), [temp3] "=&r" (temp3),
             [temp4] "=&r" (temp4), [temp5] "=&r" (temp5), [ptr] "+r" (ptr),
@@ -1190,7 +1191,7 @@ int WebRtcAecm_ProcessBlock(AecmCore* aecm,
           " lh        %[temp3],       2(%[dr_ptr])                \n\t"
           "slti       %[temp5],       %[temp1],       3277        \n\t"
           "bnez       %[temp5],       2f                          \n\t"
-          " addiu     %[dr_ptr],      %[dr_ptr],      4           \n\t"
+          PTR_ADDIU  "%[dr_ptr],      %[dr_ptr],      4           \n\t"
           "mul        %[temp2],       %[temp2],       %[temp1]    \n\t"
           "mul        %[temp3],       %[temp3],       %[temp1]    \n\t"
           "addiu      %[temp2],       %[temp2],       0x2000      \n\t"
@@ -1212,8 +1213,8 @@ int WebRtcAecm_ProcessBlock(AecmCore* aecm,
          "4:                                                      \n\t"
           "sh         %[temp2],       0(%[er_ptr])                \n\t"
           "sh         %[temp3],       2(%[er_ptr])                \n\t"
-          "addiu      %[ptr],         %[ptr],         2           \n\t"
-          "addiu      %[er_ptr],      %[er_ptr],      4           \n\t"
+          PTR_ADDIU  "%[ptr],         %[ptr],         2           \n\t"
+          PTR_ADDIU  "%[er_ptr],      %[er_ptr],      4           \n\t"
           ".set       pop                                         \n\t"
           : [temp1] "=&r" (temp1), [temp2] "=&r" (temp2), [temp3] "=&r" (temp3),
             [temp4] "=&r" (temp4), [temp5] "=&r" (temp5), [ptr] "+r" (ptr),
@@ -1373,7 +1374,7 @@ static void ComfortNoise(AecmCore* aecm,
     __asm __volatile (
       "lh     %[tmp32],       2(%[dfap])                              \n\t"
       "lw     %[tnoise1],     4(%[tmp1])                              \n\t"
-      "addiu  %[dfap],        %[dfap],    4                           \n\t"
+      PTR_ADDIU "%[dfap],     %[dfap],    4                           \n\t"
       "sllv   %[outLShift32], %[tmp32],   %[shiftFromNearToNoise]     \n\t"
       : [tmp32] "=&r" (tmp32), [dfap] "+r" (dfap),
         [outLShift32] "=r" (outLShift32), [tnoise1] "=&r" (tnoise1)
@@ -1396,9 +1397,9 @@ static void ComfortNoise(AecmCore* aecm,
         }
       } else {
         __asm __volatile (
-          "subu   %[tmp32],       %[tnoise1],     %[outLShift32]      \n\t"
+          PTR_SUBU "%[tmp32],     %[tnoise1],     %[outLShift32]      \n\t"
           "srav   %[tmp32],       %[tmp32],       %[minTrackShift]    \n\t"
-          "subu   %[tnoise1],     %[tnoise1],     %[tmp32]            \n\t"
+          PTR_SUBU "%[tnoise1],   %[tnoise1],     %[tmp32]            \n\t"
           : [tmp32] "=&r" (tmp32), [tnoise1] "+r" (tnoise1)
           : [outLShift32] "r" (outLShift32), [minTrackShift] "r" (minTrackShift)
         );
@@ -1424,8 +1425,8 @@ static void ComfortNoise(AecmCore* aecm,
           if (aecm->noiseEstTooLowCtr[i + 1] >= kNoiseEstIncCount) {
             __asm __volatile (
               "sra    %[tmp32],   %[tnoise1], 9           \n\t"
-              "addi   %[tnoise1], %[tnoise1], 1           \n\t"
-              "addu   %[tnoise1], %[tnoise1], %[tmp32]    \n\t"
+              PTR_ADDI "%[tnoise1], %[tnoise1], 1         \n\t"
+              PTR_ADDU "%[tnoise1], %[tnoise1], %[tmp32]  \n\t"
               : [tnoise1] "+r" (tnoise1), [tmp32] "=&r" (tmp32)
               :
             );
@@ -1455,8 +1456,8 @@ static void ComfortNoise(AecmCore* aecm,
       "subu   %[tmp161],  %[c114],        %[tmp161]               \n\t"
       "srav   %[tmp32],   %[tnoise],      %[shiftFromNearToNoise] \n\t"
       "srav   %[tmp321],  %[tnoise1],     %[shiftFromNearToNoise] \n\t"
-      "addiu  %[lambdap], %[lambdap],     4                       \n\t"
-      "addiu  %[tmp1],    %[tmp1],        8                       \n\t"
+      PTR_ADDIU "%[lambdap], %[lambdap],     4                    \n\t"
+      PTR_ADDIU "%[tmp1],    %[tmp1],        8                    \n\t"
       : [tmp16] "=&r" (tmp16), [tmp161] "=&r" (tmp161), [tmp1] "+r" (tmp1),
         [tmp32] "=&r" (tmp32), [tmp321] "=&r" (tmp321), [lambdap] "+r" (lambdap)
       : [tnoise] "r" (tnoise), [tnoise1] "r" (tnoise1), [c114] "r" (c114),
@@ -1487,7 +1488,7 @@ static void ComfortNoise(AecmCore* aecm,
     __asm __volatile (
       "lh     %[tmp32],       0(%[randW16p])              \n\t"
       "lh     %[tmp321],      2(%[randW16p])              \n\t"
-      "addiu  %[randW16p],    %[randW16p],    4           \n\t"
+      PTR_ADDIU "%[randW16p], %[randW16p],    4           \n\t"
       "mul    %[tmp32],       %[tmp32],       %[c359]     \n\t"
       "mul    %[tmp321],      %[tmp321],      %[c359]     \n\t"
       "sra    %[tmp16],       %[tmp32],       15          \n\t"

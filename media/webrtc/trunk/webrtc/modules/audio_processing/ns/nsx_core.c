@@ -570,7 +570,7 @@ static void WebRtcNsx_InitNeon(void) {
 }
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 // Initialize function pointers for MIPS platform.
 static void WebRtcNsx_InitMips(void) {
   WebRtcNsx_PrepareSpectrum = WebRtcNsx_PrepareSpectrum_mips;
@@ -774,7 +774,7 @@ int32_t WebRtcNsx_InitCore(NoiseSuppressionFixedC* inst, uint32_t fs) {
   WebRtcNsx_InitNeon();
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
   WebRtcNsx_InitMips();
 #endif
 

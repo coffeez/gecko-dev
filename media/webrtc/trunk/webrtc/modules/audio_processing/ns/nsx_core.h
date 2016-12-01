@@ -234,7 +234,7 @@ void WebRtcNsx_PrepareSpectrumNeon(NoiseSuppressionFixedC* inst,
                                    int16_t* freq_buff);
 #endif
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 // For the above function pointers, functions for generic platforms are declared
 // and defined as static in file nsx_core.c, while those for MIPS platforms
 // are declared below and defined in file nsx_core_mips.c.

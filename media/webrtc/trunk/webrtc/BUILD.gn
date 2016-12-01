@@ -137,7 +137,7 @@ config("common_config") {
     }
   }
 
-  if (current_cpu == "mipsel" && mips_arch_variant != "loongson") {
+  if (current_cpu == "mipsel") {
     defines += [ "MIPS32_LE" ]
     if (mips_float_abi == "hard") {
       defines += [ "MIPS_FPU_LE" ]
@@ -155,7 +155,7 @@ config("common_config") {
     }
   }
 
-  if (current_cpu == "mips64el" && mips_arch_variant != "loongson") {
+  if (current_cpu == "mips64el") {
     defines += [ "MIPS64_LE" ]
     if (mips_float_abi == "hard") {
       defines += [ "MIPS_FPU_LE" ]
