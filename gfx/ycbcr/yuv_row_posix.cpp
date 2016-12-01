@@ -912,4 +912,90 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
 }
 #endif
 
+#if (defined(ARCH_CPU_MIPS64EL) || defined(ARCH_CPU_MIPS64EL)) && \
+    defined(_MIPS_ARCH_LOONGSON3A)
+void FastConvertYUVToRGB32Row_MMI(const uint8* y_buf,
+                                  const uint8* u_buf,
+                                  const uint8* v_buf,
+                                  uint8* rgb_buf,
+                                  int width,
+                                  unsigned int x_shift) {
+    __asm__ volatile (
+        "li         $8, 0x006                                   \n\t"
+        "mtc1       $8, $f6                                     \n\t"
+        "j          1f                                          \n\t"
+        "0:                                                     \n\t"
+        "lbu        $8, 0x00(%[u_buf])                          \n\t"
+        "daddiu     %[u_buf], %[u_buf], 0x01                    \n\t"
+        "lbu        $9, 0x00(%[v_buf])                          \n\t"
+        "daddiu     %[v_buf], %[v_buf], 0x01                    \n\t"
+        "dsll       $8, 0x03                                    \n\t"
+        "daddu      $8, $8, %[kCoefficientsRgbY]                \n\t"
+        "daddiu     $8, $8, 2048                                \n\t"
+        "gsldlc1    $f0, 0x07($8)                               \n\t"
+        "gsldrc1    $f0, 0x00($8)                               \n\t"
+        "lbu        $8, 0x00(%[y_buf])                          \n\t"
+        "dsll       $9, 0x03                                    \n\t"
+        "daddu      $9, $9, %[kCoefficientsRgbY]                \n\t"
+        "daddiu     $9, $9, 4096                                \n\t"
+        "gsldlc1    $f8, 0x07($9)                               \n\t"
+        "gsldrc1    $f8, 0x00($9)                               \n\t"
+        "paddsh     $f0, $f0, $f8                               \n\t"
+        "lbu        $9, 0x01(%[y_buf])                          \n\t"
+        "dsll       $8, 0x03                                    \n\t"
+        "daddu      $8, $8, %[kCoefficientsRgbY]                \n\t"
+        "gsldlc1    $f2, 0x07($8)                               \n\t"
+        "gsldrc1    $f2, 0x00($8)                               \n\t"
+        "daddiu     %[y_buf], %[y_buf], 0x02                    \n\t"
+        "dsll       $9, 0x03                                    \n\t"
+        "daddu      $9, $9, %[kCoefficientsRgbY]                \n\t"
+        "gsldlc1    $f4, 0x07($9)                               \n\t"
+        "gsldrc1    $f4, 0x00($9)                               \n\t"
+        "paddsh     $f2, $f2, $f0                               \n\t"
+        "paddsh     $f4, $f4, $f0                               \n\t"
+        "psrah      $f2, $f2, $f6                               \n\t"
+        "psrah      $f4, $f4, $f6                               \n\t"
+        "packushb   $f2, $f2, $f4                               \n\t"
+        "gssdlc1    $f2, 0x07(%[rgb_buf])                       \n\t"
+        "gssdrc1    $f2, 0x00(%[rgb_buf])                       \n\t"
+        "daddiu     %[rgb_buf], %[rgb_buf], 0x08                \n\t"
+        "1:                                                     \n\t"
+        "daddiu     %[width], %[width], -0x02                   \n\t"
+        "bgez       %[width], 0b                                \n\t"
+        "and        %[width], %[width], 0x01                    \n\t"
+        "beqz       %[width], 2f                                \n\t"
+        "lbu        $8, 0x00(%[u_buf])                          \n\t"
+        "dsll       $8, 0x03                                    \n\t"
+        "daddu      $8, $8, %[kCoefficientsRgbY]                \n\t"
+        "daddiu     $8, $8, 0x800                               \n\t"
+        "gsldlc1    $f0, 0x07($8)                               \n\t"
+        "gsldrc1    $f0, 0x00($8)                               \n\t"
+        "lbu        $8, 0x00(%[v_buf])                          \n\t"
+        "dsll       $8, 0x03                                    \n\t"
+        "daddu      $8, $8, %[kCoefficientsRgbY]                \n\t"
+        "daddiu     $8, $8, 4096                                \n\t"
+        "gsldlc1    $f8, 0x07($8)                               \n\t"
+        "gsldrc1    $f8, 0x00($8)                               \n\t"
+        "paddsh     $f0, $f0, $f8                               \n\t"
+        "lbu        $8, 0x00(%[y_buf])                          \n\t"
+        "dsll       $8, 0x03                                    \n\t"
+        "daddu      $8, $8, %[kCoefficientsRgbY]                \n\t"
+        "gsldlc1    $f2, 0x07($8)                               \n\t"
+        "gsldrc1    $f2, 0x00($8)                               \n\t"
+        "paddsh     $f2, $f2, $f0                               \n\t"
+        "psrah      $f2, $f2, $f6                               \n\t"
+        "packushb   $f2, $f2, $f2                               \n\t"
+        "gsswlc1    $f2, 0x03(%[rgb_buf])                       \n\t"
+        "gsswrc1    $f2, 0x00(%[rgb_buf])                       \n\t"
+        "2:                                                     \n\t"
+        : [y_buf]"+&r"((uint8 *)y_buf),     [u_buf]"+&r"((uint8 *)u_buf),
+          [v_buf]"+&r"((uint8 *)v_buf),     [rgb_buf]"+&r"((uint8 *)rgb_buf),
+          [width]"+&r"((int)width)
+        : [kCoefficientsRgbY]"r"(kCoefficientsRgbY)
+        : "memory","$8","$9","$f0","$f2","$f4","$f6","$f8"
+    );
+}
+#endif  /* (defined(ARCH_CPU_MIPS64EL) || defined(ARCH_CPU_MIPS64EL)) && \
+           defined(_MIPS_ARCH_LOONGSON3A) */
+
 }

@@ -147,12 +147,22 @@ void ConvertYCbCrToRGB32_deprecated(const uint8* y_buf,
     if (odd_pic_x) {
       // Handle the single odd pixel manually and use the
       // fast routines for the remaining.
+#if (defined(ARCH_CPU_MIPS64EL) || defined(ARCH_CPU_MIPS64EL)) && \
+    defined(_MIPS_ARCH_LOONGSON3A)
+      FastConvertYUVToRGB32Row_MMI(y_ptr++,
+                                   u_ptr++,
+                                   v_ptr++,
+                                   rgb_row,
+                                   1,
+                                   x_shift);
+#else
       FastConvertYUVToRGB32Row_C(y_ptr++,
                                  u_ptr++,
                                  v_ptr++,
                                  rgb_row,
                                  1,
                                  x_shift);
+#endif
       rgb_row += 4;
     }
 
@@ -164,12 +174,22 @@ void ConvertYCbCrToRGB32_deprecated(const uint8* y_buf,
                                x_width);
     }
     else {
+#if (defined(ARCH_CPU_MIPS64EL) || defined(ARCH_CPU_MIPS64EL)) && \
+    defined(_MIPS_ARCH_LOONGSON3A)
+      FastConvertYUVToRGB32Row_MMI(y_ptr,
+                                   u_ptr,
+                                   v_ptr,
+                                   rgb_row,
+                                   x_width,
+                                   x_shift);
+#else
       FastConvertYUVToRGB32Row_C(y_ptr,
                                  u_ptr,
                                  v_ptr,
                                  rgb_row,
                                  x_width,
                                  x_shift);
+#endif
     }
   }
 
