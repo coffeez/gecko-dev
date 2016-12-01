@@ -73,7 +73,7 @@ int16_t WebRtcSpl_MaxAbsValueW16_mips(const int16_t* vector, int length) {
       "cmp.lt.ph  %[totMax],      %[tmp32_3]                  \n\t"
       "pick.ph    %[totMax],      %[tmp32_3],     %[totMax]   \n\t"
 
-      "addiu      %[tmpvec32],    %[tmpvec32],    32          \n\t"
+      PTR_ADDIU  "%[tmpvec32],    %[tmpvec32],    32          \n\t"
       : [tmp32_0] "=&r" (tmp32_0), [tmp32_1] "=&r" (tmp32_1),
         [tmp32_2] "=&r" (tmp32_2), [tmp32_3] "=&r" (tmp32_3),
         [totMax] "+r" (totMax), [tmpvec32] "+r" (tmpvec32)
@@ -93,7 +93,7 @@ int16_t WebRtcSpl_MaxAbsValueW16_mips(const int16_t* vector, int length) {
   for (i = 0; i < loop_size; i++) {
     __asm__ volatile (
       "lh         %[tmp32_0],     0(%[tmpvec32])              \n\t"
-      "addiu      %[tmpvec32],    %[tmpvec32],     2          \n\t"
+      PTR_ADDIU  "%[tmpvec32],    %[tmpvec32],     2          \n\t"
       "absq_s.w   %[tmp32_0],     %[tmp32_0]                  \n\t"
       "slt        %[tmp32_1],     %[totMax],       %[tmp32_0] \n\t"
       "movn       %[totMax],      %[tmp32_0],      %[tmp32_1] \n\t"
@@ -186,7 +186,7 @@ int16_t WebRtcSpl_MaxAbsValueW16_mips(const int16_t* vector, int length) {
       "slt    %[r3],          %[totMax],      %[tmp32_3]      \n\t"
       "movn   %[totMax],      %[tmp32_3],     %[r3]           \n\t"
 
-      "addiu  %[tmpvector],   %[tmpvector],   32              \n\t"
+      PTR_ADDIU "%[tmpvector],%[tmpvector],   32              \n\t"
       : [tmp32_0] "=&r" (tmp32_0), [tmp32_1] "=&r" (tmp32_1),
         [tmp32_2] "=&r" (tmp32_2), [tmp32_3] "=&r" (tmp32_3),
         [totMax] "+r" (totMax), [r] "=&r" (r), [tmpvector] "+r" (tmpvector),
@@ -199,7 +199,7 @@ int16_t WebRtcSpl_MaxAbsValueW16_mips(const int16_t* vector, int length) {
   for (i = 0; i < loop_size; i++) {
     __asm__ volatile (
       "lh         %[tmp32_0],     0(%[tmpvector])             \n\t"
-      "addiu      %[tmpvector],   %[tmpvector],    2          \n\t"
+      PTR_ADDIU  "%[tmpvector],   %[tmpvector],    2          \n\t"
       "abs        %[tmp32_0],     %[tmp32_0]                  \n\t"
       "slt        %[tmp32_1],     %[totMax],       %[tmp32_0] \n\t"
       "movn       %[totMax],      %[tmp32_0],      %[tmp32_1] \n\t"
@@ -244,7 +244,7 @@ int32_t WebRtcSpl_MaxAbsValueW32_mips(const int32_t* vector, int length) {
     "slt        %[tmp1],          %[maximum],         %[absolute]     \n\t"
     "movn       %[maximum],       %[absolute],        %[tmp1]         \n\t"
     "bgtz       %[length],        1b                                  \n\t"
-    " addiu     %[vector],        %[vector],          4               \n\t"
+    PTR_ADDIU  "%[vector],        %[vector],          4               \n\t"
     "slt        %[tmp1],          %[max_value],       %[maximum]      \n\t"
     "movn       %[maximum],       %[max_value],       %[tmp1]         \n\t"
 
@@ -279,7 +279,7 @@ int16_t WebRtcSpl_MaxValueW16_mips(const int16_t* vector, int length) {
     "slt        %[tmp1],          %[maximum],         %[value]        \n\t"
     "movn       %[maximum],       %[value],           %[tmp1]         \n\t"
     "bgtz       %[length],        1b                                  \n\t"
-    " addiu     %[vector],        %[vector],          2               \n\t"
+    PTR_ADDIU  "%[vector],        %[vector],          2               \n\t"
     ".set pop                                                         \n\t"
 
     : [tmp1] "=&r" (tmp1), [maximum] "+r" (maximum), [value] "=&r" (value)
@@ -309,7 +309,7 @@ int32_t WebRtcSpl_MaxValueW32_mips(const int32_t* vector, int length) {
     "slt        %[tmp1],          %[maximum],         %[value]        \n\t"
     "movn       %[maximum],       %[value],           %[tmp1]         \n\t"
     "bgtz       %[length],        1b                                  \n\t"
-    " addiu     %[vector],        %[vector],          4               \n\t"
+    PTR_ADDIU  "%[vector],        %[vector],          4               \n\t"
 
     ".set pop                                                         \n\t"
 
@@ -341,7 +341,7 @@ int16_t WebRtcSpl_MinValueW16_mips(const int16_t* vector, int length) {
     "slt        %[tmp1],          %[value],           %[minimum]      \n\t"
     "movn       %[minimum],       %[value],           %[tmp1]         \n\t"
     "bgtz       %[length],        1b                                  \n\t"
-    " addiu     %[vector],        %[vector],          2               \n\t"
+    PTR_ADDIU  "%[vector],        %[vector],          2               \n\t"
 
     ".set pop                                                         \n\t"
 
@@ -372,7 +372,7 @@ int32_t WebRtcSpl_MinValueW32_mips(const int32_t* vector, int length) {
     "slt        %[tmp1],          %[value],           %[minimum]      \n\t"
     "movn       %[minimum],       %[value],           %[tmp1]         \n\t"
     "bgtz       %[length],        1b                                  \n\t"
-    " addiu     %[vector],        %[vector],          4               \n\t"
+    PTR_ADDIU  "%[vector],        %[vector],          4               \n\t"
 
     ".set pop                                                         \n\t"
 

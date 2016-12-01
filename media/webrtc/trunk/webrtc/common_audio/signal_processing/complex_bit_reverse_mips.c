@@ -63,7 +63,7 @@ static int16_t coefTable_8[] = {
 
 void WebRtcSpl_ComplexBitReverse(int16_t frfi[], int stages) {
   int l;
-  int16_t tr, ti;
+  mips_reg tr, ti;
   int32_t tmp1, tmp2, tmp3, tmp4;
   int32_t* ptr_i;
   int32_t* ptr_j;
@@ -81,10 +81,10 @@ void WebRtcSpl_ComplexBitReverse(int16_t frfi[], int stages) {
       "lh           %[ti],           2(%[pcoeftable_8])              \n\t"
       "lh           %[tmp3],         4(%[pcoeftable_8])              \n\t"
       "lh           %[tmp4],         6(%[pcoeftable_8])              \n\t"
-      "addu         %[ptr_i],        %[frfi],             %[tr]      \n\t"
-      "addu         %[ptr_j],        %[frfi],             %[ti]      \n\t"
-      "addu         %[tr],           %[frfi],             %[tmp3]    \n\t"
-      "addu         %[ti],           %[frfi],             %[tmp4]    \n\t"
+      PTR_ADDU     "%[ptr_i],        %[frfi],             %[tr]      \n\t"
+      PTR_ADDU     "%[ptr_j],        %[frfi],             %[ti]      \n\t"
+      PTR_ADDU     "%[tr],           %[frfi],             %[tmp3]    \n\t"
+      PTR_ADDU     "%[ti],           %[frfi],             %[tmp4]    \n\t"
       "ulw          %[tmp1],         0(%[ptr_i])                     \n\t"
       "ulw          %[tmp2],         0(%[ptr_j])                     \n\t"
       "ulw          %[tmp3],         0(%[tr])                        \n\t"
@@ -97,10 +97,10 @@ void WebRtcSpl_ComplexBitReverse(int16_t frfi[], int stages) {
       "lh           %[tmp2],         10(%[pcoeftable_8])             \n\t"
       "lh           %[tr],           12(%[pcoeftable_8])             \n\t"
       "lh           %[ti],           14(%[pcoeftable_8])             \n\t"
-      "addu         %[ptr_i],        %[frfi],             %[tmp1]    \n\t"
-      "addu         %[ptr_j],        %[frfi],             %[tmp2]    \n\t"
-      "addu         %[tr],           %[frfi],             %[tr]      \n\t"
-      "addu         %[ti],           %[frfi],             %[ti]      \n\t"
+      PTR_ADDU     "%[ptr_i],        %[frfi],             %[tmp1]    \n\t"
+      PTR_ADDU     "%[ptr_j],        %[frfi],             %[tmp2]    \n\t"
+      PTR_ADDU     "%[tr],           %[frfi],             %[tr]      \n\t"
+      PTR_ADDU     "%[ti],           %[frfi],             %[ti]      \n\t"
       "ulw          %[tmp1],         0(%[ptr_i])                     \n\t"
       "ulw          %[tmp2],         0(%[ptr_j])                     \n\t"
       "ulw          %[tmp3],         0(%[tr])                        \n\t"
@@ -110,7 +110,7 @@ void WebRtcSpl_ComplexBitReverse(int16_t frfi[], int stages) {
       "usw          %[tmp4],         0(%[tr])                        \n\t"
       "usw          %[tmp3],         0(%[ti])                        \n\t"
       "bgtz         %[l],            1b                              \n\t"
-      " addiu       %[pcoeftable_8], %[pcoeftable_8],     16         \n\t"
+      PTR_ADDIU    "%[pcoeftable_8], %[pcoeftable_8],     16         \n\t"
       ".set         pop                                              \n\t"
 
       : [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2), [ptr_i] "=&r" (ptr_i),
@@ -133,10 +133,10 @@ void WebRtcSpl_ComplexBitReverse(int16_t frfi[], int stages) {
       "lh           %[ti],           2(%[pcoeftable_7])              \n\t"
       "lh           %[tmp3],         4(%[pcoeftable_7])              \n\t"
       "lh           %[tmp4],         6(%[pcoeftable_7])              \n\t"
-      "addu         %[ptr_i],        %[frfi],             %[tr]      \n\t"
-      "addu         %[ptr_j],        %[frfi],             %[ti]      \n\t"
-      "addu         %[tr],           %[frfi],             %[tmp3]    \n\t"
-      "addu         %[ti],           %[frfi],             %[tmp4]    \n\t"
+      PTR_ADDU     "%[ptr_i],        %[frfi],             %[tr]      \n\t"
+      PTR_ADDU     "%[ptr_j],        %[frfi],             %[ti]      \n\t"
+      PTR_ADDU     "%[tr],           %[frfi],             %[tmp3]    \n\t"
+      PTR_ADDU     "%[ti],           %[frfi],             %[tmp4]    \n\t"
       "ulw          %[tmp1],         0(%[ptr_i])                     \n\t"
       "ulw          %[tmp2],         0(%[ptr_j])                     \n\t"
       "ulw          %[tmp3],         0(%[tr])                        \n\t"
@@ -149,10 +149,10 @@ void WebRtcSpl_ComplexBitReverse(int16_t frfi[], int stages) {
       "lh           %[tmp2],         10(%[pcoeftable_7])             \n\t"
       "lh           %[tr],           12(%[pcoeftable_7])             \n\t"
       "lh           %[ti],           14(%[pcoeftable_7])             \n\t"
-      "addu         %[ptr_i],        %[frfi],             %[tmp1]    \n\t"
-      "addu         %[ptr_j],        %[frfi],             %[tmp2]    \n\t"
-      "addu         %[tr],           %[frfi],             %[tr]      \n\t"
-      "addu         %[ti],           %[frfi],             %[ti]      \n\t"
+      PTR_ADDU     "%[ptr_i],        %[frfi],             %[tmp1]    \n\t"
+      PTR_ADDU     "%[ptr_j],        %[frfi],             %[tmp2]    \n\t"
+      PTR_ADDU     "%[tr],           %[frfi],             %[tr]      \n\t"
+      PTR_ADDU     "%[ti],           %[frfi],             %[ti]      \n\t"
       "ulw          %[tmp1],         0(%[ptr_i])                     \n\t"
       "ulw          %[tmp2],         0(%[ptr_j])                     \n\t"
       "ulw          %[tmp3],         0(%[tr])                        \n\t"
@@ -162,7 +162,7 @@ void WebRtcSpl_ComplexBitReverse(int16_t frfi[], int stages) {
       "usw          %[tmp4],         0(%[tr])                        \n\t"
       "usw          %[tmp3],         0(%[ti])                        \n\t"
       "bgtz         %[l],            1b                              \n\t"
-      " addiu       %[pcoeftable_7], %[pcoeftable_7],     16         \n\t"
+      PTR_ADDIU    "%[pcoeftable_7], %[pcoeftable_7],     16         \n\t"
       ".set pop                                                      \n\t"
 
       : [tmp1] "=&r" (tmp1), [tmp2] "=&r" (tmp2), [ptr_i] "=&r" (ptr_i),

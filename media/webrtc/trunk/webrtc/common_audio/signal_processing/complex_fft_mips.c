@@ -28,8 +28,8 @@ int WebRtcSpl_ComplexFFT(int16_t frfi[], int stages, int mode) {
   int m = 0;
   int32_t wr = 0, wi = 0;
   int32_t tmp1 = 0;
-  int32_t tmp2 = 0;
-  int32_t tmp3 = 0;
+  mips_reg tmp2 = 0;
+  mips_reg tmp3 = 0;
   int32_t tmp4 = 0;
   int32_t tmp5 = 0;
   int32_t tmp6 = 0;
@@ -56,22 +56,22 @@ int WebRtcSpl_ComplexFFT(int16_t frfi[], int stages, int mode) {
    "2:                                                                 \n\t"
 #if defined(MIPS_DSP_R1_LE)
     "sllv       %[tmp3],        %[m],             %[k]                 \n\t"
-    "addiu      %[tmp2],        %[tmp3],          512                  \n\t"
+    PTR_ADDIU  "%[tmp2],        %[tmp3],          512                  \n\t"
     "addiu      %[m],           %[m],             1                    \n\t"
     "lhx        %[wi],          %[tmp3](%[kSinTable1024])              \n\t"
     "lhx        %[wr],          %[tmp2](%[kSinTable1024])              \n\t"
 #else  // #if defined(MIPS_DSP_R1_LE)
     "sllv       %[tmp3],        %[m],             %[k]                 \n\t"
-    "addu       %[ptr_j],       %[tmp3],          %[kSinTable1024]     \n\t"
-    "addiu      %[ptr_i],       %[ptr_j],         512                  \n\t"
+    PTR_ADDU   "%[ptr_j],       %[tmp3],          %[kSinTable1024]     \n\t"
+    PTR_ADDIU  "%[ptr_i],       %[ptr_j],         512                  \n\t"
     "addiu      %[m],           %[m],             1                    \n\t"
     "lh         %[wi],          0(%[ptr_j])                            \n\t"
     "lh         %[wr],          0(%[ptr_i])                            \n\t"
 #endif  // #if defined(MIPS_DSP_R1_LE)
    "1:                                                                 \n\t"
     "sll        %[tmp1],        %[i],             2                    \n\t"
-    "addu       %[ptr_i],       %[frfi],          %[tmp1]              \n\t"
-    "addu       %[ptr_j],       %[ptr_i],         %[tmp]               \n\t"
+    PTR_ADDU   "%[ptr_i],       %[frfi],          %[tmp1]              \n\t"
+    PTR_ADDU   "%[ptr_j],       %[ptr_i],         %[tmp]               \n\t"
     "lh         %[tmp6],        0(%[ptr_i])                            \n\t"
     "lh         %[tmp5],        2(%[ptr_i])                            \n\t"
     "lh         %[tmp3],        0(%[ptr_j])                            \n\t"
@@ -210,7 +210,7 @@ int WebRtcSpl_ComplexIFFT(int16_t frfi[], int stages, int mode) {
     "slt        %[tmp5],        %[tempMax],       %[tmp4]              \n\t"
     "movn       %[tempMax],     %[tmp4],          %[tmp5]              \n\t"
     "bgtz       %[i],                             5b                   \n\t"
-    " addiu     %[ptr_i],       %[ptr_i],         8                    \n\t"
+    PTR_ADDIU  "%[ptr_i],       %[ptr_i],         8                    \n\t"
     "addiu      %[tmp1],        $zero,            13573                \n\t"
     "addiu      %[tmp2],        $zero,            27146                \n\t"
 #if !defined(MIPS32_R2_LE)
@@ -231,22 +231,22 @@ int WebRtcSpl_ComplexIFFT(int16_t frfi[], int stages, int mode) {
    "2:                                                                 \n\t"
 #if defined(MIPS_DSP_R1_LE)
     "sllv       %[tmp3],        %[m],             %[k]                 \n\t"
-    "addiu      %[tmp2],        %[tmp3],          512                  \n\t"
+    PTR_ADDIU  "%[tmp2],        %[tmp3],          512                  \n\t"
     "addiu      %[m],           %[m],             1                    \n\t"
     "lhx        %[wi],          %[tmp3](%[kSinTable1024])              \n\t"
     "lhx        %[wr],          %[tmp2](%[kSinTable1024])              \n\t"
 #else  // #if defined(MIPS_DSP_R1_LE)
     "sllv       %[tmp3],        %[m],             %[k]                 \n\t"
-    "addu       %[ptr_j],       %[tmp3],          %[kSinTable1024]     \n\t"
-    "addiu      %[ptr_i],       %[ptr_j],         512                  \n\t"
-    "addiu      %[m],           %[m],             1                    \n\t"
+    PTR_ADDU   "%[ptr_j],       %[tmp3],          %[kSinTable1024]     \n\t"
+    PTR_ADDIU  "%[ptr_i],       %[ptr_j],         512                  \n\t"
+    PTR_ADDIU  "%[m],           %[m],             1                    \n\t"
     "lh         %[wi],          0(%[ptr_j])                            \n\t"
     "lh         %[wr],          0(%[ptr_i])                            \n\t"
 #endif  // #if defined(MIPS_DSP_R1_LE)
    "1:                                                                 \n\t"
     "sll        %[tmp1],        %[i],             2                    \n\t"
-    "addu       %[ptr_i],       %[frfi],          %[tmp1]              \n\t"
-    "addu       %[ptr_j],       %[ptr_i],         %[tmp]               \n\t"
+    PTR_ADDU   "%[ptr_i],       %[frfi],          %[tmp1]              \n\t"
+    PTR_ADDU   "%[ptr_j],       %[ptr_i],         %[tmp]               \n\t"
     "lh         %[tmp3],        0(%[ptr_j])                            \n\t"
     "lh         %[tmp4],        2(%[ptr_j])                            \n\t"
     "lh         %[tmp6],        0(%[ptr_i])                            \n\t"

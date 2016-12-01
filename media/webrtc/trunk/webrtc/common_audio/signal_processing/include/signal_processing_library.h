@@ -47,7 +47,7 @@
 
 #ifndef WEBRTC_ARCH_ARM_V7
 // For ARMv7 platforms, these are inline functions in spl_inl_armv7.h
-#ifndef MIPS32_LE
+#if !defined(MIPS32_LE) && !defined(MIPS64_LE)
 // For MIPS platforms, these are inline functions in spl_inl_mips.h
 #define WEBRTC_SPL_MUL_16_16(a, b) \
     ((int32_t) (((int16_t)(a)) * ((int16_t)(b))))
@@ -158,7 +158,7 @@ int16_t WebRtcSpl_MaxAbsValueW16C(const int16_t* vector, int length);
   (defined WEBRTC_ARCH_ARM64_NEON)
 int16_t WebRtcSpl_MaxAbsValueW16Neon(const int16_t* vector, int length);
 #endif
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 int16_t WebRtcSpl_MaxAbsValueW16_mips(const int16_t* vector, int length);
 #endif
 
@@ -198,7 +198,7 @@ int16_t WebRtcSpl_MaxValueW16C(const int16_t* vector, int length);
   (defined WEBRTC_ARCH_ARM64_NEON)
 int16_t WebRtcSpl_MaxValueW16Neon(const int16_t* vector, int length);
 #endif
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 int16_t WebRtcSpl_MaxValueW16_mips(const int16_t* vector, int length);
 #endif
 
@@ -219,7 +219,7 @@ int32_t WebRtcSpl_MaxValueW32C(const int32_t* vector, int length);
   (defined WEBRTC_ARCH_ARM64_NEON)
 int32_t WebRtcSpl_MaxValueW32Neon(const int32_t* vector, int length);
 #endif
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 int32_t WebRtcSpl_MaxValueW32_mips(const int32_t* vector, int length);
 #endif
 
@@ -240,7 +240,7 @@ int16_t WebRtcSpl_MinValueW16C(const int16_t* vector, int length);
   (defined WEBRTC_ARCH_ARM64_NEON)
 int16_t WebRtcSpl_MinValueW16Neon(const int16_t* vector, int length);
 #endif
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 int16_t WebRtcSpl_MinValueW16_mips(const int16_t* vector, int length);
 #endif
 
@@ -261,7 +261,7 @@ int32_t WebRtcSpl_MinValueW32C(const int32_t* vector, int length);
   (defined WEBRTC_ARCH_ARM64_NEON)
 int32_t WebRtcSpl_MinValueW32Neon(const int32_t* vector, int length);
 #endif
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 int32_t WebRtcSpl_MinValueW32_mips(const int32_t* vector, int length);
 #endif
 
@@ -568,7 +568,7 @@ void WebRtcSpl_CrossCorrelationNeon(int32_t* cross_correlation,
                                     int16_t right_shifts,
                                     int16_t step_seq2);
 #endif
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 void WebRtcSpl_CrossCorrelation_mips(int32_t* cross_correlation,
                                      const int16_t* seq1,
                                      const int16_t* seq2,
@@ -735,7 +735,7 @@ int WebRtcSpl_DownsampleFastNeon(const int16_t* data_in,
                                  int factor,
                                  int delay);
 #endif
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 int WebRtcSpl_DownsampleFast_mips(const int16_t* data_in,
                                   int data_in_length,
                                   int16_t* data_out,

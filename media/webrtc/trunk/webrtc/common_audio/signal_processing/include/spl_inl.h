@@ -19,7 +19,7 @@
 #include "webrtc/common_audio/signal_processing/include/spl_inl_armv7.h"
 #else
 
-#if defined(MIPS32_LE)
+#if defined(MIPS32_LE) || defined(MIPS64_LE)
 #include "webrtc/common_audio/signal_processing/include/spl_inl_mips.h"
 #endif
 
@@ -82,7 +82,7 @@ static __inline int16_t WebRtcSpl_SubSatW16(int16_t var1, int16_t var2) {
 }
 #endif  // #if !defined(MIPS_DSP_R1_LE)
 
-#if !defined(MIPS32_LE)
+#if !defined(MIPS32_LE) && !defined(MIPS64_LE)
 static __inline int16_t WebRtcSpl_GetSizeInBits(uint32_t n) {
   int16_t bits;
 
@@ -166,7 +166,7 @@ static __inline int16_t WebRtcSpl_NormW16(int16_t a) {
 static __inline int32_t WebRtc_MulAccumW16(int16_t a, int16_t b, int32_t c) {
   return (a * b + c);
 }
-#endif  // #if !defined(MIPS32_LE)
+#endif  // #if !defined(MIPS32_LE) && !defined(MIPS64_LE)
 
 #endif  // WEBRTC_ARCH_ARM_V7
 
